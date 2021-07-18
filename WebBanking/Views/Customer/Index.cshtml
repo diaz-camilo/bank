@@ -1,69 +1,43 @@
-@model IEnumerable<WebBanking.Models.Customer>
+@model WebBanking.Models.Customer
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Accounts";
 }
 
-<h1>Index</h1>
+<h1>Accounts</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().AccountNumber)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.TFN)
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Type)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Suburb)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.State)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Postcode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Mobile)
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Balance)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
+        @foreach (var item in Model.Accounts) {
+            <tr>
+                <td>
+                @Html.DisplayFor(modelItem => item.AccountNumber)
+                </td>
+                <td>
+                @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                @Html.DisplayFor(modelItem => item.Balance)
+                </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TFN)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Suburb)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.State)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Postcode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Mobile)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CustomerID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CustomerID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CustomerID">Delete</a>
+                @*<a asp-action="Edit" asp-route-id="@item.AccountNumber">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AccountNumber">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AccountNumber">Delete</a>*@
             </td>
         </tr>
 }
