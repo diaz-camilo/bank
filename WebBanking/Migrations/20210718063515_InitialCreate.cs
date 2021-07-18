@@ -12,7 +12,7 @@ namespace WebBanking.Migrations
                 columns: table => new
                 {
                     CustomerID = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TFN = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Suburb = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -30,9 +30,9 @@ namespace WebBanking.Migrations
                 columns: table => new
                 {
                     PayeeID = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Suburb = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Suburb = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
                     State = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Postcode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Mobile = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -49,7 +49,7 @@ namespace WebBanking.Migrations
                     AccountNumber = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     CustomerID = table.Column<int>(type: "int", nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Balance = table.Column<decimal>(type: "money", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,7 +66,7 @@ namespace WebBanking.Migrations
                 name: "Login",
                 columns: table => new
                 {
-                    LoginID = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    LoginID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomerID = table.Column<int>(type: "int", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
                 },
@@ -85,11 +85,12 @@ namespace WebBanking.Migrations
                 name: "BillPay",
                 columns: table => new
                 {
-                    BillPayID = table.Column<int>(type: "int", nullable: false),
+                    BillPayID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     AccountNumber = table.Column<int>(type: "int", nullable: false),
                     AccountNumber1 = table.Column<int>(type: "int", nullable: true),
                     PayeeID = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "money", nullable: false),
                     ScheduleTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Period = table.Column<int>(type: "int", nullable: false)
                 },

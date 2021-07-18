@@ -6,10 +6,11 @@ namespace WebBanking.Models
 {
     public class Login
     {
-        [StringLength(8)]
+        [RegularExpression(@"^\d{8}$")]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string LoginID { get; set; }
 
+        [Required]
         public int CustomerID { get; set; }
         public virtual Customer Customer { get; set; }
 

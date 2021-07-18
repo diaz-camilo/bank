@@ -18,8 +18,10 @@ namespace WebBanking.Models
     {
         public int TransactionID { get; set; }
 
+        [Required]
         public TransactionType TransactionType { get; set; }
 
+        [Required]
         public int AccountNumber { get; set; }
         public virtual Account Account { get; set; }
 
@@ -27,12 +29,16 @@ namespace WebBanking.Models
         public int? DestinationAccountNumber { get; set; }
         public virtual Account DestinationAccount { get; set; }
 
+        [Required]
+        [DataType(DataType.Currency)]
         [Column(TypeName = "money")]
+        [RegularExpression(@"^[1-9][0-9]*(\.[0-9]{1,2})?$")]
         public decimal Amount { get; set; }
 
         [StringLength(255)]
         public string Comment { get; set; }
 
+        [Required]
         public DateTime TransactionTimeUtc { get; set; }
     }
 }

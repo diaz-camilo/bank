@@ -29,7 +29,23 @@ namespace WebBanking
 
             // Add database connection string
             services.AddDbContext<WebBankContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("WebBankContext")));
+            {
+
+
+
+                options.UseSqlServer(Configuration.GetConnectionString("WebBankContext"));
+
+                // Enable lazy loading.
+                options.UseLazyLoadingProxies();
+            });
+
+            // Store session into Web-Server memory.
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                // Make the session cookie essential.
+                options.Cookie.IsEssential = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,7 +62,11 @@ namespace WebBanking
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
+
+            // enables authentication
+            app.UseSession();
 
             app.UseRouting();
 

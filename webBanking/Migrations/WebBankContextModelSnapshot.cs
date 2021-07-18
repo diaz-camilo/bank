@@ -25,7 +25,7 @@ namespace WebBanking.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("money");
 
                     b.Property<int>("CustomerID")
                         .HasColumnType("int");
@@ -43,7 +43,9 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.BillPay", b =>
                 {
                     b.Property<int>("BillPayID")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("AccountNumber")
                         .HasColumnType("int");
@@ -52,7 +54,7 @@ namespace WebBanking.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("money");
 
                     b.Property<int>("PayeeID")
                         .HasColumnType("int");
@@ -84,6 +86,7 @@ namespace WebBanking.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Postcode")
@@ -106,8 +109,7 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.Login", b =>
                 {
                     b.Property<string>("LoginID")
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("CustomerID")
                         .HasColumnType("int");
@@ -130,13 +132,15 @@ namespace WebBanking.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Mobile")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Postcode")
                         .HasColumnType("nvarchar(max)");
@@ -145,7 +149,8 @@ namespace WebBanking.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Suburb")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.HasKey("PayeeID");
 
