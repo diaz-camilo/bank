@@ -39,12 +39,51 @@ namespace WebBanking
                 options.UseLazyLoadingProxies();
             });
 
-            // Store session into Web-Server memory.
-            services.AddDistributedMemoryCache();
+            //// Store session into Web-Server memory.
+            
+
+            //services.AddDistributedMemoryCache();
+            //services.AddSession(options =>
+            //{
+            //    // Make the session cookie essential.
+            //    options.Cookie.IsEssential = true;
+            //});
+
+
+
+            /* Store session into SQL Server.
+             * Package required: Microsoft.Extensions.Caching.SqlServer 
+             * 
+             * before using, run the following commands:
+             * 
+             * # Installing tools
+             * dotnet tool install --global dotnet-sql-cache
+             * OR
+             * dotnet tool update --global dotnet-sql-cache
+             * 
+             * # Distributed SQL Server Cache
+             * Note the schema used below is dotnet not the default schema dbo.
+             * 
+             * The dotnet schema will need to be created on the database in advance with this SQL:
+             * 
+             * create schema dotnet;
+             * 
+             * Run the following command to create the session cache table:
+             * 
+             * dotnet sql-cache create "<connection string>" <schema name> <table name>
+             * dotnet sql-cache create "Server=rmit.australiaeast.cloudapp.azure.com;Uid=s3820251_a2;Pwd=abc123;" dotnet SessionCache
+             */
+            services.AddDistributedSqlServerCache(options =>
+            {
+                options.ConnectionString = Configuration.GetConnectionString(nameof(WebBankContext));
+                options.SchemaName = "dotnet";
+                options.TableName = "SessionCache";
+            });
             services.AddSession(options =>
             {
                 // Make the session cookie essential.
                 options.Cookie.IsEssential = true;
+                options.IdleTimeout = TimeSpan.FromDays(7);
             });
         }
 

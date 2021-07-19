@@ -77,18 +77,17 @@ namespace WebBanking.Controllers
         }
 
         // GET: Customer/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
 
-            var customer = await _context.Customer.FindAsync(id);
             if (customer == null)
             {
                 return NotFound();
             }
+
             return View(customer);
         }
 
@@ -97,9 +96,11 @@ namespace WebBanking.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CustomerID,Name,TFN,Address,Suburb,State,Postcode,Mobile")] Customer customer)
+        //public async Task<IActionResult> Edit(int id, [Bind("CustomerID,Name,TFN,Address,Suburb,State,Postcode,Mobile")] Customer customer)
+        public async Task<IActionResult> Edit(Customer customer)
         {
-            if (id != customer.CustomerID)
+
+            if (getCustomerFromSession() == null)
             {
                 return NotFound();
             }
@@ -160,5 +161,16 @@ namespace WebBanking.Controllers
         {
             return _context.Customer.Any(e => e.CustomerID == id);
         }
+
+        private Customer getCustomerFromSession()
+        {
+            int? customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = customerID == null ? null : _context.Customer
+                .FirstOrDefault(m => m.CustomerID == customerID);
+
+            return customer;
+        }
+
+
     }
 }
