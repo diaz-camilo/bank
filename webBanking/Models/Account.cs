@@ -16,7 +16,7 @@ namespace WebBanking.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Display(Name = "Account Number")]
+        [Display(Name = "Account Number")] // Used by HTML helpers
         [RegularExpression(@"^\d{4}$")]
         public int AccountNumber { get; set; }
 
@@ -30,7 +30,7 @@ namespace WebBanking.Models
 
         [Required]
         [Column(TypeName = "money")]
-        [DataType(DataType.Currency)]
+        [DataType(DataType.Currency)] // used by HTML helper, displays dollar sign and comas
         public decimal Balance { get; set; }
 
         [InverseProperty("Account")]

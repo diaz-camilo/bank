@@ -22,6 +22,7 @@ namespace WebBanking.Models
         public TransactionType TransactionType { get; set; }
 
         [Required]
+        [ForeignKey("Account")]
         public int AccountNumber { get; set; }
         public virtual Account Account { get; set; }
 

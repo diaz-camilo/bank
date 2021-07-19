@@ -50,7 +50,7 @@
                         <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Accounts Summary</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Edit">My Profile</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Edit" asp-route-id=@Context.Session.GetInt32(nameof(Customer.CustomerID))>My Profile</a>
                     </li>
                     @*<li class="nav-item">
             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>

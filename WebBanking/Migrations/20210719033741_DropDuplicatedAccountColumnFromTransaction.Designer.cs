@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanking.Data;
 
 namespace WebBanking.Migrations
 {
     [DbContext(typeof(WebBankContext))]
-    partial class WebBankContextModelSnapshot : ModelSnapshot
+    [Migration("20210719033741_DropDuplicatedAccountColumnFromTransaction")]
+    partial class DropDuplicatedAccountColumnFromTransaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,8 +123,7 @@ namespace WebBanking.Migrations
 
                     b.HasKey("LoginID");
 
-                    b.HasIndex("CustomerID")
-                        .IsUnique();
+                    b.HasIndex("CustomerID");
 
                     b.ToTable("Login");
                 });
@@ -224,8 +225,8 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.Login", b =>
                 {
                     b.HasOne("WebBanking.Models.Customer", "Customer")
-                        .WithOne("Login")
-                        .HasForeignKey("WebBanking.Models.Login", "CustomerID")
+                        .WithMany()
+                        .HasForeignKey("CustomerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -259,8 +260,6 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.Customer", b =>
                 {
                     b.Navigation("Accounts");
-
-                    b.Navigation("Login");
                 });
 
             modelBuilder.Entity("WebBanking.Models.Payee", b =>

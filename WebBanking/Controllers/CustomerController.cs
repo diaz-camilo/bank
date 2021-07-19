@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
+using SimpleHashing;
 
 namespace WebBanking.Controllers
 {
@@ -76,18 +77,34 @@ namespace WebBanking.Controllers
             return View(customer);
         }
 
-        // GET: Customer/Edit/5
-        public async Task<IActionResult> Edit()
+        public async Task<IActionResult> Profile(int? id)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
-
-            if (customer == null)
+            if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
             {
                 return NotFound();
             }
 
+            var customer = await _context.Customer.FindAsync(id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            return View(customer);
+        }
+
+        // GET: Customer/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
+            {
+                return NotFound();
+            }
+
+            var customer = await _context.Customer.FindAsync(id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
             return View(customer);
         }
 
@@ -96,11 +113,9 @@ namespace WebBanking.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, [Bind("CustomerID,Name,TFN,Address,Suburb,State,Postcode,Mobile")] Customer customer)
-        public async Task<IActionResult> Edit(Customer customer)
+        public async Task<IActionResult> Edit(int id, [Bind("CustomerID,Name,TFN,Address,Suburb,State,Postcode,Mobile")] Customer customer)
         {
-
-            if (getCustomerFromSession() == null)
+            if (id != customer.CustomerID || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
             {
                 return NotFound();
             }
@@ -126,6 +141,62 @@ namespace WebBanking.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);
+        }
+
+        // GET: Customer/Edit/5
+        public async Task<IActionResult> ChangePassword(int? id)
+        {
+            if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
+            {
+                return NotFound();
+            }
+
+            var customer = await _context.Customer.FindAsync(id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            return View(customer);
+        }
+
+        // POST: Customer/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int CustomerID, string password)
+        {
+            if (CustomerID != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
+            {
+                return NotFound();
+            }
+
+            Login login = await _context.Login.FirstOrDefaultAsync(x => x.CustomerID == CustomerID);
+            login.PasswordHash = PBKDF2.Hash(password);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+
+            //if (ModelState.IsValid)
+            //{
+            //    try
+            //    {
+            //        _context.Update(customer);
+            //        await _context.SaveChangesAsync();
+            //    }
+            //    catch (DbUpdateConcurrencyException)
+            //    {
+            //        if (!CustomerExists(customer.CustomerID))
+            //        {
+            //            return NotFound();
+            //        }
+            //        else
+            //        {
+            //            throw;
+            //        }
+            //    }
+            //    return RedirectToAction(nameof(Index));
+            //}
+            //return View(customer);
         }
 
         // GET: Customer/Delete/5
