@@ -34,11 +34,11 @@
                 <td>
                 @Html.DisplayFor(modelItem => item.Balance)
                 </td>
-            <td>
-                @*<a asp-action="Edit" asp-route-id="@item.AccountNumber">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AccountNumber">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AccountNumber">Delete</a>*@
-            </td>
+                <td>
+                    <a class="btn btn-primary" asp-action="Deposit" asp-route-id="@item.AccountNumber">Deposit</a>
+                    <a class="btn btn-primary" asp-action="Withdraw" asp-route-id="@item.AccountNumber">Withdraw</a>
+                    
+                </td>
         </tr>
 }
     </tbody>

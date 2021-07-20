@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
 using SimpleHashing;
+using System.Text.RegularExpressions;
 
 namespace WebBanking.Controllers
 {
@@ -53,6 +54,109 @@ namespace WebBanking.Controllers
             }
 
             return View(customer);
+        }
+
+        //GET: Customer/Deposit/5
+        public async Task<IActionResult> Deposit(int? id)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
+            {
+                return NotFound();
+            }
+
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
+
+
+            return View(account);
+        }
+
+        [HttpPost]
+        //POST: Customer/Deposit/5
+        public async Task<IActionResult> Deposit(int id, decimal amount)
+        {
+            var account = await _context.Account.FindAsync(id);
+
+            if (amount <= 0)
+                ModelState.AddModelError(nameof(amount), "Amount must be positive.");
+            if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
+                ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Amount = amount;
+                return View(account);
+            }
+
+            // Note this code could be moved out of the controller, e.g., into the Model.
+            account.Balance += amount;
+            account.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.Deposit,
+                    Amount = amount,
+                    TransactionTimeUtc = DateTime.UtcNow
+                });
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        //GET: Customer/Withdraw/5
+        public async Task<IActionResult> Withdraw(int? id)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
+            {
+                return NotFound();
+            }
+
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
+
+
+            return View(account);
+        }
+
+        [HttpPost]
+        //POST: Customer/Withdraw/5
+        public async Task<IActionResult> Withdraw(int id, decimal amount)
+        {
+            var account = await _context.Account.FindAsync(id);
+
+            if (amount <= 0)
+                ModelState.AddModelError(nameof(amount), "Amount must be positive.");
+            if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
+                ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
+            if (account.Type == AccountType.Savings)            
+                if (account.Balance - amount < 0)                
+                    ModelState.AddModelError(nameof(amount), "Insuficient funds");
+            if (account.Type == AccountType.Checking)
+                if (account.Balance - amount < 200)
+                    ModelState.AddModelError(nameof(amount), "Insuficient funds");
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Amount = amount;
+                return View(account);
+            }
+
+            // Note this code could be moved out of the controller, e.g., into the Model.
+
+            account.Balance -= amount;
+            account.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.Withdraw,
+                    Amount = amount,
+                    TransactionTimeUtc = DateTime.UtcNow
+                });
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Customer/Create
@@ -143,7 +247,7 @@ namespace WebBanking.Controllers
             return View(customer);
         }
 
-        // GET: Customer/Edit/5
+        // GET: Customer/ChangePassword/5
         public async Task<IActionResult> ChangePassword(int? id)
         {
             if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
@@ -159,9 +263,7 @@ namespace WebBanking.Controllers
             return View(customer);
         }
 
-        // POST: Customer/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Customer/ChangePassword/5
         [HttpPost]
         public async Task<IActionResult> ChangePassword(int CustomerID, string password)
         {
@@ -173,30 +275,9 @@ namespace WebBanking.Controllers
             Login login = await _context.Login.FirstOrDefaultAsync(x => x.CustomerID == CustomerID);
             login.PasswordHash = PBKDF2.Hash(password);
             await _context.SaveChangesAsync();
+            ViewBag.success = "Password has been changed";
 
-            return RedirectToAction("Index");
-
-            //if (ModelState.IsValid)
-            //{
-            //    try
-            //    {
-            //        _context.Update(customer);
-            //        await _context.SaveChangesAsync();
-            //    }
-            //    catch (DbUpdateConcurrencyException)
-            //    {
-            //        if (!CustomerExists(customer.CustomerID))
-            //        {
-            //            return NotFound();
-            //        }
-            //        else
-            //        {
-            //            throw;
-            //        }
-            //    }
-            //    return RedirectToAction(nameof(Index));
-            //}
-            //return View(customer);
+            return View();            
         }
 
         // GET: Customer/Delete/5
