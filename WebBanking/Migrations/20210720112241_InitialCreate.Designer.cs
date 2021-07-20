@@ -10,7 +10,7 @@ using WebBanking.Data;
 namespace WebBanking.Migrations
 {
     [DbContext(typeof(WebBankContext))]
-    [Migration("20210718063515_InitialCreate")]
+    [Migration("20210720112241_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,9 @@ namespace WebBanking.Migrations
                         .HasColumnType("money");
 
                     b.Property<int>("CustomerID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FreeTransactions")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -123,7 +126,8 @@ namespace WebBanking.Migrations
 
                     b.HasKey("LoginID");
 
-                    b.HasIndex("CustomerID");
+                    b.HasIndex("CustomerID")
+                        .IsUnique();
 
                     b.ToTable("Login");
                 });
@@ -169,9 +173,6 @@ namespace WebBanking.Migrations
                     b.Property<int>("AccountNumber")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AccountNumber1")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Amount")
                         .HasColumnType("money");
 
@@ -190,7 +191,7 @@ namespace WebBanking.Migrations
 
                     b.HasKey("TransactionID");
 
-                    b.HasIndex("AccountNumber1");
+                    b.HasIndex("AccountNumber");
 
                     b.HasIndex("DestinationAccountNumber");
 
@@ -228,8 +229,8 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.Login", b =>
                 {
                     b.HasOne("WebBanking.Models.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerID")
+                        .WithOne("Login")
+                        .HasForeignKey("WebBanking.Models.Login", "CustomerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -240,7 +241,9 @@ namespace WebBanking.Migrations
                 {
                     b.HasOne("WebBanking.Models.Account", "Account")
                         .WithMany("Transactions")
-                        .HasForeignKey("AccountNumber1");
+                        .HasForeignKey("AccountNumber")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("WebBanking.Models.Account", "DestinationAccount")
                         .WithMany()
@@ -261,6 +264,8 @@ namespace WebBanking.Migrations
             modelBuilder.Entity("WebBanking.Models.Customer", b =>
                 {
                     b.Navigation("Accounts");
+
+                    b.Navigation("Login");
                 });
 
             modelBuilder.Entity("WebBanking.Models.Payee", b =>

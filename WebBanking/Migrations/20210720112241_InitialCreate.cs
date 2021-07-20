@@ -49,7 +49,8 @@ namespace WebBanking.Migrations
                     AccountNumber = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     CustomerID = table.Column<int>(type: "int", nullable: false),
-                    Balance = table.Column<decimal>(type: "money", nullable: false)
+                    Balance = table.Column<decimal>(type: "money", nullable: false),
+                    FreeTransactions = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -119,7 +120,6 @@ namespace WebBanking.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TransactionType = table.Column<int>(type: "int", nullable: false),
                     AccountNumber = table.Column<int>(type: "int", nullable: false),
-                    AccountNumber1 = table.Column<int>(type: "int", nullable: true),
                     DestinationAccountNumber = table.Column<int>(type: "int", nullable: true),
                     Amount = table.Column<decimal>(type: "money", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -129,11 +129,11 @@ namespace WebBanking.Migrations
                 {
                     table.PrimaryKey("PK_Transaction", x => x.TransactionID);
                     table.ForeignKey(
-                        name: "FK_Transaction_Account_AccountNumber1",
-                        column: x => x.AccountNumber1,
+                        name: "FK_Transaction_Account_AccountNumber",
+                        column: x => x.AccountNumber,
                         principalTable: "Account",
                         principalColumn: "AccountNumber",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Transaction_Account_DestinationAccountNumber",
                         column: x => x.DestinationAccountNumber,
@@ -160,12 +160,13 @@ namespace WebBanking.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Login_CustomerID",
                 table: "Login",
-                column: "CustomerID");
+                column: "CustomerID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_AccountNumber1",
+                name: "IX_Transaction_AccountNumber",
                 table: "Transaction",
-                column: "AccountNumber1");
+                column: "AccountNumber");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transaction_DestinationAccountNumber",

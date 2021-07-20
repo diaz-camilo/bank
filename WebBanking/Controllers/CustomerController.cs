@@ -127,16 +127,17 @@ namespace WebBanking.Controllers
         public async Task<IActionResult> Withdraw(int id, decimal amount)
         {
             var account = await _context.Account.FindAsync(id);
+            decimal fee = account.FreeTransactions <= 0 ? 0.1m : 0;
 
             if (amount <= 0)
                 ModelState.AddModelError(nameof(amount), "Amount must be positive.");
             if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
                 ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
             if (account.Type == AccountType.Savings)
-                if (account.Balance - amount < 0)
+                if (account.Balance - amount - fee < 0)
                     ModelState.AddModelError(nameof(amount), "Insuficient funds");
             if (account.Type == AccountType.Checking)
-                if (account.Balance - amount < 200)
+                if (account.Balance - amount - fee < 200)
                     ModelState.AddModelError(nameof(amount), "Insuficient funds");
             if (!ModelState.IsValid)
             {
@@ -147,6 +148,7 @@ namespace WebBanking.Controllers
             // Note this code could be moved out of the controller, e.g., into the Model.
 
             account.Balance -= amount;
+            account.FreeTransactions--;
             account.Transactions.Add(
                 new Transaction
                 {
@@ -154,13 +156,24 @@ namespace WebBanking.Controllers
                     Amount = amount,
                     TransactionTimeUtc = DateTime.UtcNow
                 });
-
+            if (fee > 0)
+            {
+                account.Balance -= fee;
+                account.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.ServiceCharge,
+                    Amount = fee,
+                    TransactionTimeUtc = DateTime.UtcNow,
+                    Comment = "Withdraw fee"
+                });
+            }
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        //GET: Customer/Withdraw/5
+        //GET: Customer/Statements/5
         public async Task<IActionResult> Statements(int? id , int page = 1)
         {
             
@@ -171,18 +184,7 @@ namespace WebBanking.Controllers
             return View(transactions);
         }
 
-        
-        //POST: Customer/Withdraw/5
-        public async Task<IActionResult> StatementsDisplay(int AccountNumber, int page = 1)
-        {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            if (customerID == null)
-                return NotFound();
-            var transactions = await _context.Transaction.Where(x => x.AccountNumber == AccountNumber).ToPagedListAsync(page, 4);
-            return View(transactions);
-
-        }
-
+       
         // GET: Customer/Create
         public IActionResult Create()
         {

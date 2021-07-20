@@ -68,28 +68,32 @@ namespace WebBanking.Data
                     AccountNumber = 4100,
                     Type = AccountType.Savings,
                     CustomerID = 2100,
-                    Balance = 100
+                    Balance = 100,
+                    FreeTransactions = 4
                 },
                 new Account
                 {
                     AccountNumber = 4101,
                     Type = AccountType.Checking,
                     CustomerID = 2100,
-                    Balance = 500
+                    Balance = 500,
+                    FreeTransactions = 4
                 },
                 new Account
                 {
                     AccountNumber = 4200,
                     Type = AccountType.Savings,
                     CustomerID = 2200,
-                    Balance = 500.95m
+                    Balance = 500.95m,
+                    FreeTransactions = 4
                 },
                 new Account
                 {
                     AccountNumber = 4300,
                     Type = AccountType.Checking,
                     CustomerID = 2300,
-                    Balance = 1250.50m
+                    Balance = 1250.50m,
+                    FreeTransactions = 4
                 });
 
             const string openingBalance = "Opening balance";

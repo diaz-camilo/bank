@@ -33,10 +33,14 @@ namespace WebBanking.Models
         [DataType(DataType.Currency)] // used by HTML helper, displays dollar sign and comas
         public decimal Balance { get; set; }
 
+        public int FreeTransactions { get; set; }
+
         [InverseProperty("Account")]
         public virtual List<Transaction> Transactions { get; set; }
 
         public virtual List<BillPay> BillPays { get; set; }
+
+
 
     }
 }
