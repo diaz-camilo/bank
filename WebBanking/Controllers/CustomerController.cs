@@ -10,6 +10,7 @@ using WebBanking.Data;
 using WebBanking.Models;
 using SimpleHashing;
 using System.Text.RegularExpressions;
+using X.PagedList;
 
 namespace WebBanking.Controllers
 {
@@ -131,8 +132,8 @@ namespace WebBanking.Controllers
                 ModelState.AddModelError(nameof(amount), "Amount must be positive.");
             if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
                 ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
-            if (account.Type == AccountType.Savings)            
-                if (account.Balance - amount < 0)                
+            if (account.Type == AccountType.Savings)
+                if (account.Balance - amount < 0)
                     ModelState.AddModelError(nameof(amount), "Insuficient funds");
             if (account.Type == AccountType.Checking)
                 if (account.Balance - amount < 200)
@@ -157,6 +158,29 @@ namespace WebBanking.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        //GET: Customer/Withdraw/5
+        public async Task<IActionResult> Statements(int? id , int page = 1)
+        {
+            
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var transactions = await _context.Transaction.Where(x => x.AccountNumber == id).OrderByDescending(y => y.TransactionTimeUtc).ToPagedListAsync(page,4);
+            if (customerID == null)
+                return NotFound();
+            return View(transactions);
+        }
+
+        
+        //POST: Customer/Withdraw/5
+        public async Task<IActionResult> StatementsDisplay(int AccountNumber, int page = 1)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            if (customerID == null)
+                return NotFound();
+            var transactions = await _context.Transaction.Where(x => x.AccountNumber == AccountNumber).ToPagedListAsync(page, 4);
+            return View(transactions);
+
         }
 
         // GET: Customer/Create
@@ -277,7 +301,7 @@ namespace WebBanking.Controllers
             await _context.SaveChangesAsync();
             ViewBag.success = "Password has been changed";
 
-            return View();            
+            return View();
         }
 
         // GET: Customer/Delete/5

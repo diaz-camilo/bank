@@ -15,6 +15,7 @@
     <None Remove="SimpleHashing" />
     <None Remove="Views\Login\" />
     <None Remove="Microsoft.Extensions.Caching.SqlServer" />
+    <None Remove="X.PagedList.Mvc.Core" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.8" />
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.8" />
     <PackageReference Include="SimpleHashing" Version="2.0.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="5.0.1" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="8.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />

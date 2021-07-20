@@ -17,7 +17,7 @@ namespace WebBanking.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Display(Name = "Account Number")] // Used by HTML helpers
-        [RegularExpression(@"^\d{4}$")]
+        [RegularExpression(@"^\d{4}$")] // wrong
         public int AccountNumber { get; set; }
 
         [Required]
