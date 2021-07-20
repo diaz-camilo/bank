@@ -1,0 +1,45 @@
+﻿@model WebBanking.Models.Customer
+
+@{
+    ViewData["Title"] = "Transfer";
+}
+
+<h1>Transfer</h1>
+<h2>Select Account</h2>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().AccountNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Balance)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Accounts)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AccountNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Balance)
+                </td>
+                <td>
+                    <a class="btn btn-primary" asp-action="TransferForm" asp-route-id="@item.AccountNumber">Transfer</a>                    
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -173,18 +173,127 @@ namespace WebBanking.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //GET: Customer/Statements/5
-        public async Task<IActionResult> Statements(int? id , int page = 1)
+
+        public async Task<IActionResult> Transfer()
         {
-            
             var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var transactions = await _context.Transaction.Where(x => x.AccountNumber == id).OrderByDescending(y => y.TransactionTimeUtc).ToPagedListAsync(page,4);
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
+        }
+
+        public async Task<IActionResult> TransferForm(int? id)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer == null)
+                return NotFound();
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
+            if (account == null)
+                return NotFound();
+
+
+
+            return View(new Transaction() { AccountNumber = account.AccountNumber });
+        }
+
+        [HttpPost]
+
+        public async Task<IActionResult> TransferForm(Transaction transaction)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer == null)
+                return NotFound();
+
+
+
+            var originAccount = await _context.Account.FindAsync(transaction.AccountNumber);
+            decimal fee = originAccount.FreeTransactions <= 0 ? 0.20m : 0; // 0.20 for transfers
+
+            var destinationAccount = await _context.Account.FindAsync(transaction.DestinationAccountNumber);
+
+            //if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber) == null)
+            //    ModelState.AddModelError(nameof(transaction.AccountNumber), "Account number error.");
+
+            // validate destination account exist.
+            if (destinationAccount == null)
+                ModelState.AddModelError(nameof(transaction.DestinationAccountNumber), "Account does not exist");
+
+            // validate amount decimal places
+            if (!Regex.IsMatch(transaction.Amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
+                ModelState.AddModelError(nameof(transaction.Amount), "Amount cannot have more than 2 decimal places.");
+
+            // validate suficient funds
+            if (originAccount.Type == AccountType.Savings)
+                if (originAccount.Balance - transaction.Amount - fee < 0)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
+
+            if (originAccount.Type == AccountType.Checking)
+                if (originAccount.Balance - transaction.Amount - fee < 200)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
+
+            if (!ModelState.IsValid)
+                return View(transaction);
+
+            // Note this code could be moved out of the controller, e.g., into the Model.
+
+            originAccount.Balance -= transaction.Amount;
+            destinationAccount.Balance += transaction.Amount;
+            originAccount.FreeTransactions--;
+            originAccount.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.OutgoingTransfer,
+                    Amount = transaction.Amount,
+                    DestinationAccountNumber = transaction.DestinationAccountNumber,
+                    Comment = transaction.Comment,
+                    TransactionTimeUtc = DateTime.UtcNow
+                });
+            destinationAccount.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.IncomingTransfer,
+                    Amount = transaction.Amount,
+                    Comment = transaction.Comment,
+                    TransactionTimeUtc = DateTime.UtcNow
+                });
+            if (fee > 0)
+            {
+                originAccount.Balance -= fee;
+                originAccount.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.ServiceCharge,
+                    Amount = fee,
+                    TransactionTimeUtc = DateTime.UtcNow,
+                    Comment = "Transfer fee"
+                });
+            }
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        //GET: Customer/Statements/5
+        public async Task<IActionResult> Statements(int? id, int page = 1)
+        {
+
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var transactions = await _context.Transaction.Where(x => x.AccountNumber == id).OrderByDescending(y => y.TransactionTimeUtc).ToPagedListAsync(page, 4);
             if (customerID == null)
                 return NotFound();
             return View(transactions);
         }
 
-       
+
         // GET: Customer/Create
         public IActionResult Create()
         {
