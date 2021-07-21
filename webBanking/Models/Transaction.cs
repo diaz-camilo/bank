@@ -14,7 +14,7 @@ namespace WebBanking.Models
         BillPay = 6
     }
 
-    public class Transaction
+    public record Transaction
     {
         public int TransactionID { get; set; }
 
@@ -36,7 +36,7 @@ namespace WebBanking.Models
         [Required]
         [DataType(DataType.Currency)]
         [Column(TypeName = "money")]
-        [RegularExpression(@"^[1-9][0-9]*(\.[0-9]{1,2})?$")]
+        [RegularExpression(@"^[0-9]*(\.[0-9]{1,2})?$")]
         public decimal Amount { get; set; }
 
         [StringLength(255)]

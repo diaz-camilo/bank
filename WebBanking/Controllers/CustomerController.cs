@@ -11,6 +11,7 @@ using WebBanking.Models;
 using SimpleHashing;
 using System.Text.RegularExpressions;
 using X.PagedList;
+using WebBanking.ViewModels;
 
 namespace WebBanking.Controllers
 {
@@ -42,17 +43,13 @@ namespace WebBanking.Controllers
         // GET: Customer/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
             var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == id);
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+
             if (customer == null)
-            {
                 return NotFound();
-            }
 
             return View(customer);
         }
@@ -109,51 +106,48 @@ namespace WebBanking.Controllers
         public async Task<IActionResult> Withdraw(int? id)
         {
             var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
-            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
-            {
+            var customer = await _context.Customer.FindAsync(customerID);
+            if (customer == null
+                || customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
                 return NotFound();
-            }
 
-            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
-
-
-            return View(account);
+            return View(new TransactionViewModel() { AccountNumber =  (int)id});
         }
 
         [HttpPost]
         //POST: Customer/Withdraw/5
-        public async Task<IActionResult> Withdraw(int id, decimal amount)
+        public async Task<IActionResult> Withdraw(TransactionViewModel transaction)
         {
-            var account = await _context.Account.FindAsync(id);
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
+            if (customer == null)
+                return NotFound();
+
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
+            if (account == null)
+                return NotFound();
+
+            
             decimal fee = account.FreeTransactions <= 0 ? 0.1m : 0;
 
-            if (amount <= 0)
-                ModelState.AddModelError(nameof(amount), "Amount must be positive.");
-            if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
-                ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
+            // validate suficient funds acording to account type
             if (account.Type == AccountType.Savings)
-                if (account.Balance - amount - fee < 0)
-                    ModelState.AddModelError(nameof(amount), "Insuficient funds");
+                if (account.Balance - transaction.Amount - fee < 0)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
             if (account.Type == AccountType.Checking)
-                if (account.Balance - amount - fee < 200)
-                    ModelState.AddModelError(nameof(amount), "Insuficient funds");
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Amount = amount;
-                return View(account);
-            }
+                if (account.Balance - transaction.Amount - fee < 200)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
 
-            // Note this code could be moved out of the controller, e.g., into the Model.
-
-            account.Balance -= amount;
+            if (!ModelState.IsValid)                            
+                return View(transaction);
+                                    
+            account.Balance -= transaction.Amount;
             account.FreeTransactions--;
             account.Transactions.Add(
                 new Transaction
                 {
                     TransactionType = TransactionType.Withdraw,
-                    Amount = amount,
+                    Amount = transaction.Amount,
                     TransactionTimeUtc = DateTime.UtcNow
                 });
             if (fee > 0)
@@ -200,12 +194,12 @@ namespace WebBanking.Controllers
 
 
 
-            return View(new Transaction() { AccountNumber = account.AccountNumber });
+            return View(new TransactionViewModel() { AccountNumber = account.AccountNumber });
         }
 
         [HttpPost]
 
-        public async Task<IActionResult> TransferForm(Transaction transaction)
+        public async Task<IActionResult> TransferForm(TransactionViewModel transaction)
         {
             var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
             var customer = await _context.Customer
@@ -232,9 +226,9 @@ namespace WebBanking.Controllers
             if (destinationAccount == null)
                 ModelState.AddModelError(nameof(transaction.DestinationAccountNumber), "Account does not exist");
 
-            // validate amount decimal places
-            if (!Regex.IsMatch(transaction.Amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
-                ModelState.AddModelError(nameof(transaction.Amount), "Amount cannot have more than 2 decimal places.");
+            //// validate amount decimal places
+            //if (!Regex.IsMatch(transaction.Amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
+            //    ModelState.AddModelError(nameof(transaction.Amount), "Amount cannot have more than 2 decimal places.");
 
             // validate suficient funds
             if (originAccount.Type == AccountType.Savings)
@@ -321,34 +315,30 @@ namespace WebBanking.Controllers
             return View(customer);
         }
 
-        public async Task<IActionResult> Profile(int? id)
-        {
-            if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
-            {
-                return NotFound();
-            }
+        //public async Task<IActionResult> Profile(int? id)
+        //{
+        //    if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
+        //    {
+        //        return NotFound();
+        //    }
 
-            var customer = await _context.Customer.FindAsync(id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
-            return View(customer);
-        }
+        //    var customer = await _context.Customer.FindAsync(id);
+        //    if (customer == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return View(customer);
+        //}
 
         // GET: Customer/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
-            {
-                return NotFound();
-            }
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
 
-            var customer = await _context.Customer.FindAsync(id);
             if (customer == null)
-            {
                 return NotFound();
-            }
+
             return View(customer);
         }
 
@@ -359,32 +349,21 @@ namespace WebBanking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("CustomerID,Name,TFN,Address,Suburb,State,Postcode,Mobile")] Customer customer)
         {
-            if (id != customer.CustomerID || id != HttpContext.Session.GetInt32(nameof(Customer.CustomerID)))
-            {
+            // validate customer details to edit belong to logged in customer
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            if (customer.CustomerID != customerID)
                 return NotFound();
-            }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CustomerExists(customer.CustomerID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(customer);
+            // validate model
+            if (!ModelState.IsValid)
+                return View(customer);
+
+            // save changes
+            _context.Update(customer);
+            await _context.SaveChangesAsync();
+
+            //return To details            
+            return RedirectToAction(nameof(Details));
         }
 
         // GET: Customer/ChangePassword/5
