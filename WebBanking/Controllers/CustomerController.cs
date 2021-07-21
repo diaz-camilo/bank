@@ -220,8 +220,13 @@ namespace WebBanking.Controllers
 
             var destinationAccount = await _context.Account.FindAsync(transaction.DestinationAccountNumber);
 
-            //if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber) == null)
-            //    ModelState.AddModelError(nameof(transaction.AccountNumber), "Account number error.");
+            // validate that origin account number belongs to customer
+            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber) == null)
+                return NotFound();
+
+            // validate origin account is diferent from destination account
+            if (transaction.AccountNumber == transaction.DestinationAccountNumber)
+                ModelState.AddModelError(nameof(transaction.DestinationAccountNumber), "Destination account must be different from origin account");
 
             // validate destination account exist.
             if (destinationAccount == null)
