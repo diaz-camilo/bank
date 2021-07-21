@@ -12,8 +12,10 @@ namespace WebBanking.Data
         {
             using var context = new WebBankContext(serviceProvider.GetRequiredService<DbContextOptions<WebBankContext>>());
 
+            var any = context.Customer.Any();
+
             // Look for customers.
-            if (context.Customer.Any())
+            if (any)
                 return; // DB has already been seeded.
 
             // Stages changes
@@ -41,6 +43,7 @@ namespace WebBanking.Data
                     CustomerID = 2300,
                     Name = "Shekhar Kalra"
                 });
+            context.SaveChanges();
 
             context.Login.AddRange(
                 new Login
@@ -61,7 +64,7 @@ namespace WebBanking.Data
                     CustomerID = 2300,
                     PasswordHash = "LuiVJWbY4A3y1SilhMU5P00K54cGEvClx5Y+xWHq7VpyIUe5fe7m+WeI0iwid7GE"
                 });
-
+            context.SaveChanges();
             context.Account.AddRange(
                 new Account
                 {
@@ -95,7 +98,7 @@ namespace WebBanking.Data
                     Balance = 1250.50m,
                     FreeTransactions = 4
                 });
-
+            context.SaveChanges();
             const string openingBalance = "Opening balance";
             const string format = "dd/MM/yyyy hh:mm:ss tt";
             context.Transaction.AddRange(
@@ -131,6 +134,7 @@ namespace WebBanking.Data
                     Comment = openingBalance,
                     TransactionTimeUtc = DateTime.ParseExact("19/12/2019 10:00:00 PM", format, null)
                 });
+            context.SaveChanges();
             context.Payee.AddRange(
                 new Payee
                 {
@@ -154,7 +158,7 @@ namespace WebBanking.Data
                 },
                 new Payee
                 {
-                    PayeeID = 123,
+                    PayeeID = 789,
                     Name = "Netflix Au",
                     Address = "123 Flinders st",
                     Postcode = "3000",
