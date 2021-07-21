@@ -1,4 +1,5 @@
 ﻿using System;
+using utils;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -27,8 +28,8 @@ namespace WebBanking.Models
         [RegularExpression(@"^\d{4}$")]
         public string Postcode { get; set; }
 
-        [RegularExpression(@"^04\d{2}(?:\s\d{3}){2}$")]
-        public string Mobile { get; set; }
+        [RegularExpression(RegexPatterns.PhoneNumberWithParentheses)]
+        public string Phone { get; set; }
 
         public virtual List<BillPay> BillPays { get; set; }
 

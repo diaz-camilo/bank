@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using utils;
+
 namespace WebBanking.ViewModels
 {
     public class TransactionViewModel
@@ -16,7 +18,7 @@ namespace WebBanking.ViewModels
 
         [Required]
         [DataType(DataType.Currency)]
-        [RegularExpression(@"^[0-9]*(\.[0-9]{1,2})?$",
+        [RegularExpression(RegexPatterns.PositiveNumberTwoDecimal,
             ErrorMessage ="only one or two decimal places allowed and no negative numbers")]
         public decimal Amount { get; set; }
 
@@ -24,3 +26,4 @@ namespace WebBanking.ViewModels
         public string Comment { get; set; }
     }
 }
+

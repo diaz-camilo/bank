@@ -9,22 +9,28 @@
 <div>
     <h1>Transactions for account number @Model.First().AccountNumber </h1>
     <table class="table table-striped">
-        <tr>            
-            <th>@Html.DisplayNameFor(x => x[0].Amount)</th>
-            <th>@Html.DisplayNameFor(x => x[0].DestinationAccountNumber)</th>
+        <tr>
+            <th>@Html.DisplayNameFor(x => x[0].TransactionTimeUtc)</th>
             <th>@Html.DisplayNameFor(x => x[0].Comment)</th>
             <th>@Html.DisplayNameFor(x => x[0].TransactionType)</th>
-            <th>@Html.DisplayNameFor(x => x[0].TransactionTimeUtc)</th>
+            <th>@Html.DisplayNameFor(x => x[0].DestinationAccountNumber)</th>
+            <th>@Html.DisplayNameFor(x => x[0].Amount)</th>
         </tr>
         @foreach (var transaction in Model)
         {
-    <tr>
-        <td>@Html.DisplayFor(x => transaction.Amount)</td>
-        <td>@Html.DisplayFor(x => transaction.DestinationAccountNumber)</td>
-        <td>@Html.DisplayFor(x => transaction.Comment)</td>
-        <td>@Html.DisplayFor(x => transaction.TransactionType)</td>
-        <td>@transaction.TransactionTimeUtc.ToLocalTime().ToString("dd MMM yyyy H:mm")</td>
-    </tr>
+            <tr>
+                <td>@transaction.TransactionTimeUtc.ToLocalTime().ToString("dd MMM yyyy H:mm")</td>
+                <td>@Html.DisplayFor(x => transaction.Comment)</td>
+                <td>@Html.DisplayFor(x => transaction.TransactionType)</td>
+                <td>@Html.DisplayFor(x => transaction.DestinationAccountNumber)</td>
+                <td>
+                    @if (transaction.TransactionType == TransactionType.Withdraw
+                        || transaction.TransactionType == TransactionType.OutgoingTransfer
+                        || transaction.TransactionType == TransactionType.BillPay
+                        || transaction.TransactionType == TransactionType.ServiceCharge)
+                    {<span>- </span>} @Html.DisplayFor(x => transaction.Amount).
+                </td>
+            </tr>
         }
     </table>
 

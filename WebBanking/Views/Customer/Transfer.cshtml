@@ -12,10 +12,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().AccountNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Type)
+                Account
             </th>
             <th>
                 @Html.DisplayNameFor(Model => Model.Accounts.FirstOrDefault().Balance)
@@ -28,16 +25,13 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.AccountNumber)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Type)
+                    @Html.DisplayFor(modelItem => item.AccountNumber) - @Html.DisplayFor(modelItem => item.Type)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Balance)
                 </td>
                 <td>
-                    <a class="btn btn-primary" asp-action="TransferForm" asp-route-id="@item.AccountNumber">Transfer</a>                    
+                    <a class="btn btn-primary" asp-action="TransferForm" asp-route-id="@item.AccountNumber">Transfer</a>
                 </td>
             </tr>
         }

@@ -61,39 +61,45 @@ namespace WebBanking.Controllers
             var customer = await _context.Customer
                 .FirstOrDefaultAsync(m => m.CustomerID == customerID);
             if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
-            {
                 return NotFound();
-            }
+
 
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
 
 
-            return View(account);
+            return View(new TransactionViewModel {AccountNumber = (int)id });
         }
 
         [HttpPost]
         //POST: Customer/Deposit/5
-        public async Task<IActionResult> Deposit(int id, decimal amount)
+        public async Task<IActionResult> Deposit(TransactionViewModel transaction)
         {
-            var account = await _context.Account.FindAsync(id);
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
+            if (customer == null)
+                return NotFound();
 
-            if (amount <= 0)
-                ModelState.AddModelError(nameof(amount), "Amount must be positive.");
-            if (!Regex.IsMatch(amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
-                ModelState.AddModelError(nameof(amount), "Amount cannot have more than 2 decimal places.");
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
+            if (account == null)
+                return NotFound();
+
+            
+
+            //if (transaction.Amount <= 0)
+            //    ModelState.AddModelError(nameof(transaction.Amount), "Amount must be positive.");
+            //if (!Regex.IsMatch(transaction.Amount.ToString(), @"^[0-9]+(\.[0-9]{1,2})?$"))
+            //    ModelState.AddModelError(nameof(transaction.Amount), "Amount cannot have more than 2 decimal places.");
             if (!ModelState.IsValid)
-            {
-                ViewBag.Amount = amount;
-                return View(account);
-            }
+                return View(transaction);
+            
 
             // Note this code could be moved out of the controller, e.g., into the Model.
-            account.Balance += amount;
+            account.Balance += transaction.Amount;
             account.Transactions.Add(
                 new Transaction
                 {
                     TransactionType = TransactionType.Deposit,
-                    Amount = amount,
+                    Amount = transaction.Amount,
                     TransactionTimeUtc = DateTime.UtcNow
                 });
 
@@ -111,7 +117,7 @@ namespace WebBanking.Controllers
                 || customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
                 return NotFound();
 
-            return View(new TransactionViewModel() { AccountNumber =  (int)id});
+            return View(new TransactionViewModel() { AccountNumber = (int)id });
         }
 
         [HttpPost]
@@ -127,7 +133,7 @@ namespace WebBanking.Controllers
             if (account == null)
                 return NotFound();
 
-            
+
             decimal fee = account.FreeTransactions <= 0 ? 0.1m : 0;
 
             // validate suficient funds acording to account type
@@ -138,9 +144,9 @@ namespace WebBanking.Controllers
                 if (account.Balance - transaction.Amount - fee < 200)
                     ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
 
-            if (!ModelState.IsValid)                            
+            if (!ModelState.IsValid)
                 return View(transaction);
-                                    
+
             account.Balance -= transaction.Amount;
             account.FreeTransactions--;
             account.Transactions.Add(

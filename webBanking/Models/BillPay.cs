@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
+using utils;
 
 namespace WebBanking.Models
 {
@@ -31,7 +32,7 @@ namespace WebBanking.Models
         [DataType(DataType.Currency)]
         [Required]
         [Column(TypeName = "money")]
-        [RegularExpression(@"^[1-9][0-9]*(\.[0-9]{1,2})?$")]
+        [RegularExpression(RegexPatterns.PositiveNumberTwoDecimal)]
         public decimal Amount { get; set; }
 
         [Required]

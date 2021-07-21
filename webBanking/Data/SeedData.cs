@@ -131,6 +131,38 @@ namespace WebBanking.Data
                     Comment = openingBalance,
                     TransactionTimeUtc = DateTime.ParseExact("19/12/2019 10:00:00 PM", format, null)
                 });
+            context.Payee.AddRange(
+                new Payee
+                {
+                    PayeeID = 123,
+                    Name = "Telstra",
+                    Address = "123 Swanston st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 9876 5432"
+                },
+                new Payee
+                {
+                    PayeeID = 456,
+                    Name = "Origin",
+                    Address = "123 Lonsdale st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 6547 5432"
+                },
+                new Payee
+                {
+                    PayeeID = 123,
+                    Name = "Netflix Au",
+                    Address = "123 Flinders st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 7878 1122"
+                }
+                );
             // Commits changes
             context.SaveChanges();
         }
