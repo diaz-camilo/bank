@@ -1,4 +1,4 @@
-@*@model WebBanking.Models.BillPay*@
+
 @model WebBanking.ViewModels.BillPayViewModel
 
 @{ ViewData["Title"] = "Create"; }
@@ -13,8 +13,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="AccountNumberSelected" class="control-label"></label>
-                <select asp-for="AccountNumberSelected" class="form-control" asp-items="Model.Accounts" ></select>
-                @*<span asp-validation-for="AccountNumberSelected" class="text-danger"></span>*@
+                <select asp-for="AccountNumberSelected" class="form-control" asp-items="Model.Accounts"></select>
             </div>
             <div class="form-group">
                 <label asp-for="PayeeIDSelected" class="control-label"></label>
@@ -33,7 +32,6 @@
             <div class="form-group">
                 <label asp-for="PeriodSelected" class="control-label"></label>
                 <select asp-for="PeriodSelected" class="form-control" asp-items="Model.Periods"></select>
-                @*<span asp-validation-for="PeriodSelected" class="text-danger"></span>*@
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

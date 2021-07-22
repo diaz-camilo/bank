@@ -17,6 +17,14 @@ namespace WebBanking.Views
     {
         private readonly WebBankContext _context;
 
+        private Customer GetActiveCustomer()
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = _context.Customer
+                .FirstOrDefault(m => m.CustomerID == customerID);
+            return customer;
+        }
+
         public BillPayController(WebBankContext context)
         {
             _context = context;
@@ -25,48 +33,41 @@ namespace WebBanking.Views
         // GET: BillPay
         public async Task<IActionResult> Index()
         {
-            var webBankContext = _context.BillPay.Include(b => b.Payee);
-            return View(await webBankContext.ToListAsync());
+            // Validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
+            // Get active customer accounts
+            var accounts = _context.Account.Where(x => x.CustomerID == customer.CustomerID).Select(x => x.AccountNumber).ToList();
+
+            var billPays = _context.BillPay.Where(x => accounts.Contains(x.AccountNumber));
+            return View(await billPays.ToListAsync());
         }
 
-        // GET: BillPay/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var billPay = await _context.BillPay
-                .Include(b => b.Payee)
-                .FirstOrDefaultAsync(m => m.BillPayID == id);
-            if (billPay == null)
-            {
-                return NotFound();
-            }
-
-            return View(billPay);
-        }
 
         // GET: BillPay/Create
         public IActionResult Create()
         {
-            //ViewData["PayeeID"] = new SelectList(_context.Payee, "PayeeID", "PayeeID");
-            //ViewData["Period"] = new SelectList(Enum.GetValues<Period>());
-            //return View();
-            //
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = _context.Customer
-                .FirstOrDefault(m => m.CustomerID == customerID);
+            var customer = GetActiveCustomer();
             if (customer == null)
-            {
                 return NotFound();
-            }
 
-            var model = new BillPayViewModel();
-            model.Accounts = new SelectList(_context.Account.Where(x => x.CustomerID == customerID).Select(x => x.AccountNumber));
-            model.Payees = new SelectList(_context.Payee, "PayeeID","PayeeID");
-            model.ScheduleTimeUtc = DateTime.UtcNow.ToLocalTime();
+
+            var model = new BillPayViewModel()
+            {
+                Accounts = _context.Account
+                    .Where(x => x.CustomerID == customer.CustomerID)
+                    .Select(x => new SelectListItem($"{x.AccountNumber} - {x.Type}", x.AccountNumber.ToString()))
+                    .ToList(),
+
+                Payees = _context.Payee
+                    .Select(x => new SelectListItem(x.Name, x.PayeeID.ToString()))
+                    .ToList(),
+
+                ScheduleTimeUtc = DateTime.UtcNow.AddDays(1).ToLocalTime().Date
+            };
+
 
             return View(model);
         }
@@ -76,31 +77,59 @@ namespace WebBanking.Views
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BillPayID,AccountNumber,PayeeID,Amount,ScheduleTimeUtc,Period")] BillPay billPay)
+        public async Task<IActionResult> Create([Bind("AccountNumberSelected,PayeeIDSelected,Amount,ScheduleTimeUtc,PeriodSelected")] BillPayViewModel billPayViewModel)
         {
-            if (ModelState.IsValid)
+
+            // validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+            // Check that date is in the future
+            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow)
+                ModelState.AddModelError(nameof(billPayViewModel.ScheduleTimeUtc), "Schedule date and time must be in the future");
+            // validate model
+            if (!ModelState.IsValid)
             {
-                _context.Add(billPay);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                billPayViewModel.Accounts = _context.Account
+                    .Where(x => x.CustomerID == customer.CustomerID)
+                    .Select(x => new SelectListItem($"{x.AccountNumber} - {x.Type}", x.AccountNumber.ToString()))
+                    .ToList();
+
+                billPayViewModel.Payees = _context.Payee
+                    .Select(x => new SelectListItem(x.Name, x.PayeeID.ToString()))
+                    .ToList();
+
+                return View(billPayViewModel);
             }
-            ViewData["PayeeID"] = new SelectList(_context.Payee, "PayeeID", "PayeeID", billPay.PayeeID);
-            return View(billPay);
+
+            var billPay = new BillPay
+            {
+                AccountNumber = billPayViewModel.AccountNumberSelected,
+                Amount = billPayViewModel.Amount,
+                PayeeID = billPayViewModel.PayeeIDSelected,
+                ScheduleTimeUtc = billPayViewModel.ScheduleTimeUtc,
+                Period = billPayViewModel.PeriodSelected
+            };
+
+            _context.Add(billPay);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+
         }
 
         // GET: BillPay/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var billPay = await _context.BillPay.FindAsync(id);
             if (billPay == null)
-            {
                 return NotFound();
-            }
+
+
+
             ViewData["PayeeID"] = new SelectList(_context.Payee, "PayeeID", "PayeeID", billPay.PayeeID);
             return View(billPay);
         }

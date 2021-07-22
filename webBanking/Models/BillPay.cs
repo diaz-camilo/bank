@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
@@ -21,10 +22,14 @@ namespace WebBanking.Models
         public int BillPayID { get; set; }
 
         [Required]
+        [RegularExpression(@"\d{4}", ErrorMessage = "Account number must be a 4 digit number")]
+        [DisplayName("Account to Debit")]
         public int AccountNumber { get; set; }
         public virtual Account Account { get; set; }
 
         [Required]
+        [RegularExpression(@"\d{3}", ErrorMessage = "Account number must be a 3 digit number")]
+
         public int PayeeID { get; set; }
         public virtual Payee Payee { get; set; }
 
@@ -36,9 +41,11 @@ namespace WebBanking.Models
         public decimal Amount { get; set; }
 
         [Required]
+        [DisplayName("Schedule Date and Time")]
         public DateTime ScheduleTimeUtc { get; set; }
 
         [Required]
+        [DisplayName("Frequency")]
         public Period Period { get; set; }
     }
 }
