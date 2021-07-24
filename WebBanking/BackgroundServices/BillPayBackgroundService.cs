@@ -27,7 +27,7 @@ namespace WebBanking.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("BillPay Bg services is running");
+            ;
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -40,8 +40,7 @@ namespace WebBanking.BackgroundServices
 
         private async Task ProcessBillPays(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Bg service is working");
-
+            
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<WebBankContext>();
 
@@ -53,11 +52,11 @@ namespace WebBanking.BackgroundServices
                 Where(bill => bill.State != State.failed).
                 ToList();
             
-            _logger.LogInformation($"Bills to pay {BillPays.Count}");
+            _logger.LogInformation($"Bills to process {BillPays.Count}");
 
             foreach (var bill in BillPays)
             {
-                _logger.LogInformation($"{bill.BillPayID} {bill.Payee.Name} - {bill.ScheduleTimeUtc.ToShortTimeString()}");
+                
                 var availableBalance = bill.Account.Balance - (bill.Account.Type == AccountType.Checking ? 200 : 0);
                 if (availableBalance < bill.Amount)
                 {
@@ -110,14 +109,9 @@ namespace WebBanking.BackgroundServices
 
             await context.SaveChangesAsync(stoppingToken);
 
-            _logger.LogInformation("this is the result of the Bg service");
-
         }
 
-        private List<BillPay> GetBillPaysDue(WebBankContext context) =>
-            context.BillPay.Where(bill => DateTime.UtcNow.CompareTo(bill.ScheduleTimeUtc) > 0).
-            //Where(bill => bill.State != State.failed).
-            ToList();
+        
 
 
     }
