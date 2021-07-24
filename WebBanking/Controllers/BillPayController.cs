@@ -8,8 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
 using WebBanking.ViewModels;
+using X.PagedList;
 
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics.CodeAnalysis;
 
 namespace WebBanking.Views
 {
@@ -20,18 +22,15 @@ namespace WebBanking.Views
         private Customer GetActiveCustomer()
         {
             var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = _context.Customer
+            var customer = _context.Customer.Include(x => x.Accounts).ThenInclude(x => x.BillPays)
                 .FirstOrDefault(m => m.CustomerID == customerID);
             return customer;
         }
 
-        public BillPayController(WebBankContext context)
-        {
-            _context = context;
-        }
+        public BillPayController(WebBankContext context) => _context = context;
 
         // GET: BillPay
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
             // Validate customer
             var customer = GetActiveCustomer();
@@ -41,8 +40,8 @@ namespace WebBanking.Views
             // Get active customer accounts
             var accounts = _context.Account.Where(x => x.CustomerID == customer.CustomerID).Select(x => x.AccountNumber).ToList();
 
-            var billPays = _context.BillPay.Where(x => accounts.Contains(x.AccountNumber));
-            return View(await billPays.ToListAsync());
+            var billPays = _context.BillPay.Where(x => accounts.Contains(x.AccountNumber)).OrderBy(bill => bill.ScheduleTimeUtc);
+            return View(await billPays.ToPagedListAsync(page, 6));
         }
 
 
@@ -56,15 +55,8 @@ namespace WebBanking.Views
 
             var model = new BillPayViewModel()
             {
-                Accounts = _context.Account
-                    .Where(x => x.CustomerID == customer.CustomerID)
-                    .Select(x => new SelectListItem($"{x.AccountNumber} - {x.Type}", x.AccountNumber.ToString()))
-                    .ToList(),
-
-                Payees = _context.Payee
-                    .Select(x => new SelectListItem(x.Name, x.PayeeID.ToString()))
-                    .ToList(),
-
+                Accounts = SelectListItemsOfCustomerAccounts(customer),
+                Payees = SelectListItemsOfPayees(),
                 ScheduleTimeUtc = DateTime.UtcNow.AddDays(1).ToLocalTime().Date
             };
 
@@ -90,15 +82,8 @@ namespace WebBanking.Views
             // validate model
             if (!ModelState.IsValid)
             {
-                billPayViewModel.Accounts = _context.Account
-                    .Where(x => x.CustomerID == customer.CustomerID)
-                    .Select(x => new SelectListItem($"{x.AccountNumber} - {x.Type}", x.AccountNumber.ToString()))
-                    .ToList();
-
-                billPayViewModel.Payees = _context.Payee
-                    .Select(x => new SelectListItem(x.Name, x.PayeeID.ToString()))
-                    .ToList();
-
+                billPayViewModel.Accounts = SelectListItemsOfCustomerAccounts(customer);
+                billPayViewModel.Payees = SelectListItemsOfPayees();
                 return View(billPayViewModel);
             }
 
@@ -121,17 +106,34 @@ namespace WebBanking.Views
         // GET: BillPay/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            // validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
             if (id == null)
+                return NotFound();
+
+            if (!OwnsBill((int)id, customer))
                 return NotFound();
 
             var billPay = await _context.BillPay.FindAsync(id);
             if (billPay == null)
                 return NotFound();
 
+            var viewModel = new BillPayViewModel
+            {
+                AccountNumberSelected = billPay.AccountNumber,
+                Amount = billPay.Amount,
+                BillPayID = billPay.BillPayID,
+                ScheduleTimeUtc = billPay.ScheduleTimeUtc,
+                PeriodSelected = billPay.Period,
+                PayeeIDSelected = billPay.PayeeID,
+                Accounts = SelectListItemsOfCustomerAccounts(customer),
+                Payees = SelectListItemsOfPayees()
+            };
 
-
-            ViewData["PayeeID"] = new SelectList(_context.Payee, "PayeeID", "PayeeID", billPay.PayeeID);
-            return View(billPay);
+            return View(viewModel);
         }
 
         // POST: BillPay/Edit/5
@@ -139,52 +141,64 @@ namespace WebBanking.Views
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BillPayID,AccountNumber,PayeeID,Amount,ScheduleTimeUtc,Period")] BillPay billPay)
+        public async Task<IActionResult> Edit(int id, [Bind("BillPayID,AccountNumberSelected,PayeeIDSelected,Amount,ScheduleTimeUtc,PeriodSelected")] BillPayViewModel billPayViewModel)
         {
-            if (id != billPay.BillPayID)
-            {
+            var customer = GetActiveCustomer();
+            if (customer == null || id != billPayViewModel.BillPayID)
                 return NotFound();
+
+            if (!OwnsBill((int)id, customer))
+                return NotFound();
+
+            // Check that date is in the future
+            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow)
+                ModelState.AddModelError(nameof(billPayViewModel.ScheduleTimeUtc), "Schedule date and time must be in the future");
+
+            if (!ModelState.IsValid)
+            {
+                billPayViewModel.Accounts = SelectListItemsOfCustomerAccounts(customer);
+                billPayViewModel.Payees = SelectListItemsOfPayees();
+                return View(billPayViewModel);
             }
 
-            if (ModelState.IsValid)
+            var billPay = await _context.BillPay.FindAsync(id);
+
+            billPay.AccountNumber = billPayViewModel.AccountNumberSelected;
+            billPay.Amount = billPayViewModel.Amount;
+            billPay.PayeeID = billPayViewModel.PayeeIDSelected;
+            billPay.ScheduleTimeUtc = billPayViewModel.ScheduleTimeUtc;
+            billPay.Period = billPayViewModel.PeriodSelected;
+
+            try
             {
-                try
-                {
-                    _context.Update(billPay);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BillPayExists(billPay.BillPayID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(billPay);
+                await _context.SaveChangesAsync();
             }
-            ViewData["PayeeID"] = new SelectList(_context.Payee, "PayeeID", "PayeeID", billPay.PayeeID);
-            return View(billPay);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BillPayExists(billPay.BillPayID))
+                    return NotFound();
+                else
+                    throw;
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: BillPay/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var customer = GetActiveCustomer();
 
-            var billPay = await _context.BillPay
-                .Include(b => b.Payee)
-                .FirstOrDefaultAsync(m => m.BillPayID == id);
-            if (billPay == null)
-            {
+            if (customer == null || id == null)
                 return NotFound();
-            }
+
+            if (!OwnsBill((int)id, customer))
+                return NotFound();
+
+            var billPay = await _context.BillPay.FirstOrDefaultAsync(m => m.BillPayID == id);
+
+            if (billPay == null)
+                return NotFound();
 
             return View(billPay);
         }
@@ -194,15 +208,47 @@ namespace WebBanking.Views
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
+            if (!OwnsBill(id, customer))
+                return NotFound();
+
+
             var billPay = await _context.BillPay.FindAsync(id);
             _context.BillPay.Remove(billPay);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BillPayExists(int id)
-        {
-            return _context.BillPay.Any(e => e.BillPayID == id);
-        }
+        private bool BillPayExists(int id) =>
+            _context.BillPay.Any(e => e.BillPayID == id);
+
+
+        private bool OwnsBill(int id, Customer customer) =>
+            customer.
+            Accounts.
+            Where(acc => acc.BillPays.
+                Contains(new BillPay { BillPayID = id }, new BillComparer())).
+            Any();
+
+        private List<SelectListItem> SelectListItemsOfCustomerAccounts(Customer customer) =>
+            _context.Account
+                    .Where(x => x.CustomerID == customer.CustomerID)
+                    .Select(x => new SelectListItem($"{x.AccountNumber} - {x.Type}", x.AccountNumber.ToString()))
+                    .ToList();
+
+        private List<SelectListItem> SelectListItemsOfPayees() =>
+            _context.Payee
+                    .Select(x => new SelectListItem(x.Name, x.PayeeID.ToString()))
+                    .ToList();
+    }
+
+    class BillComparer : IEqualityComparer<BillPay>
+    {
+        public bool Equals(BillPay x, BillPay y) => x.BillPayID == y.BillPayID ? true : false;
+
+        public int GetHashCode([DisallowNull] BillPay obj) => obj.GetHashCode();
     }
 }
