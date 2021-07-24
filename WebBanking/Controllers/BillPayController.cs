@@ -77,7 +77,7 @@ namespace WebBanking.Views
             if (customer == null)
                 return NotFound();
             // Check that date is in the future
-            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow)
+            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
                 ModelState.AddModelError(nameof(billPayViewModel.ScheduleTimeUtc), "Schedule date and time must be in the future");
             // validate model
             if (!ModelState.IsValid)
@@ -151,7 +151,7 @@ namespace WebBanking.Views
                 return NotFound();
 
             // Check that date is in the future
-            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow)
+            if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
                 ModelState.AddModelError(nameof(billPayViewModel.ScheduleTimeUtc), "Schedule date and time must be in the future");
 
             if (!ModelState.IsValid)

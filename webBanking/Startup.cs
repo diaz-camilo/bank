@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WebBanking.BackgroundServices;
 using WebBanking.Data;
 
 namespace WebBanking
@@ -30,17 +31,17 @@ namespace WebBanking
             // Add database connection string
             services.AddDbContext<WebBankContext>(options =>
             {
-
-
-
                 options.UseSqlServer(Configuration.GetConnectionString("WebBankContext"));
-
                 // Enable lazy loading.
                 options.UseLazyLoadingProxies();
             });
 
+            // Enable Background Services
+            services.AddHostedService<BillPayBackgroundService>();
+
+
             //// Store session into Web-Server memory.
-            
+
 
             //services.AddDistributedMemoryCache();
             //services.AddSession(options =>

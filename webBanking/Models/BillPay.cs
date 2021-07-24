@@ -15,6 +15,11 @@ namespace WebBanking.Models
         Once = 4
     }
 
+    public enum State
+    {
+        active, failed
+    }
+
     public class BillPay
     {
 
@@ -50,5 +55,7 @@ namespace WebBanking.Models
         [Required]
         [DisplayName("Frequency")]
         public Period Period { get; set; }
+
+        public State State { get; set; }
     }
 }
