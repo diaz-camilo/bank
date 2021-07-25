@@ -67,7 +67,7 @@ namespace WebBanking.Controllers
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
 
 
-            return View(new TransactionViewModel {AccountNumber = (int)id });
+            return View(new TransactionViewModel { AccountNumber = (int)id });
         }
 
         [HttpPost]
@@ -83,7 +83,36 @@ namespace WebBanking.Controllers
             if (account == null)
                 return NotFound();
 
-            
+            if (!ModelState.IsValid)
+                return View(transaction);
+
+            HttpContext.Session.SetInt32("depositAccountNum", transaction.AccountNumber);
+            HttpContext.Session.SetString("depositAmount", transaction.Amount.ToString());
+
+            return RedirectToAction(nameof(DepositConfirm), transaction);
+        }
+
+        public IActionResult DepositConfirm(int AccountNumber, string Amount)
+        {
+            decimal decAmount;
+            Decimal.TryParse(Amount,  out decAmount);
+            return View(new TransactionViewModel { AccountNumber = AccountNumber, Amount = decAmount });
+        }
+
+            [HttpPost]
+        //POST: Customer/Deposit/5
+        public async Task<IActionResult> DepositConfirm(TransactionViewModel transaction)
+        {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
+            if (customer == null)
+                return NotFound();
+
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
+            if (account == null)
+                return NotFound();
+
+
 
             //if (transaction.Amount <= 0)
             //    ModelState.AddModelError(nameof(transaction.Amount), "Amount must be positive.");
@@ -91,7 +120,7 @@ namespace WebBanking.Controllers
             //    ModelState.AddModelError(nameof(transaction.Amount), "Amount cannot have more than 2 decimal places.");
             if (!ModelState.IsValid)
                 return View(transaction);
-            
+
 
             // Note this code could be moved out of the controller, e.g., into the Model.
             account.Balance += transaction.Amount;

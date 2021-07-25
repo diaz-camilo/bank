@@ -10,7 +10,8 @@
             <div class="form-group">
                 <input asp-for="AccountNumber" hidden />
                 <label asp-for="Amount" class="control-label" ></label>
-                <input asp-for="Amount"class="form-control" type="number" step="0.01"/>
+                <input asp-for="Amount"class="form-control"/>
+                       @*type="number" step="0.01"/>*@
                 <span asp-validation-for="Amount" class="text-danger" ></span>                
             </div>
             <div class="form-group">

@@ -3,14 +3,14 @@
 @using X.PagedList.Web.Common
 @model IPagedList<BillPay>
 
-@{ ViewData["Title"] = "Index"; }
+@{ ViewData["Title"] = "BillPay Index"; }
 
-<h1>Index</h1>
+<h1>BillPay Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>
@@ -45,7 +45,7 @@
         @Html.DisplayFor(modelItem => item.Amount)
     </td>
     <td>
-        @Html.DisplayFor(modelItem => item.ScheduleTimeUtc)
+        @item.ScheduleTimeUtc.ToString("dd MMM yyyy H:mm")
     </td>
     <td>
         @Html.DisplayFor(modelItem => item.Period)
