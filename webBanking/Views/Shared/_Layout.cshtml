@@ -52,12 +52,15 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Customer" asp-action="Transfer">Transfer</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="BillPay" asp-action="Index">BillPay</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            BillPay
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a asp-controller="BillPay" asp-action="Index" class="dropdown-item">Active Bills</a>
+                            <a asp-controller="BillPay" asp-action="FailedBills" class="dropdown-item">Failed Bills</a>
+                        </div>
                     </li>
-                    @*<li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </li>*@
                 </ul>
                     }
                 </div>

@@ -1,0 +1,65 @@
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@model IPagedList<BillPay>
+
+@{ ViewData["Title"] = "Failed Bills"; }
+
+<h1>Failed Bills</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].AccountNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Payee)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].ScheduleTimeUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Period)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.AccountNumber)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Payee.Name)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Amount)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.ScheduleTimeUtc)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Period)
+    </td>
+    <td>
+        <a asp-action="TryAgain" asp-route-id="@item.BillPayID">Try Again</a> |
+        <a asp-action="Reschedule" asp-route-id="@item.BillPayID">Reschedule</a> |
+        <a asp-action="Delete" asp-route-id="@item.BillPayID">Delete</a>
+    </td>
+</tr>
+}
+    </tbody>
+</table>
+
+@Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+        new PagedListRenderOptions
+        {
+            LiElementClasses = new[] { "page-item" },
+            PageClasses = new[] { "page-link" }
+        })

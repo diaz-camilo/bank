@@ -42,6 +42,7 @@ namespace WebBanking.ViewModels
         [DisplayName("Schedule Time")]
         public DateTime ScheduleTimeUtc { get; set; }
 
+        [Required]
         [DisplayName("Frequency")]
         public Period PeriodSelected { get; set; }
 

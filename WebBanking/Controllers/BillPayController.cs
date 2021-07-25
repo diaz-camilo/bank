@@ -38,11 +38,43 @@ namespace WebBanking.Views
                 return NotFound();
 
             // Get active customer accounts
-            var accounts = _context.Account.Where(x => x.CustomerID == customer.CustomerID).Select(x => x.AccountNumber).ToList();
+            var accounts = _context.Account.
+                Where(x => x.CustomerID == customer.CustomerID).
+                Select(x => x.AccountNumber).
+                ToList();
 
-            var billPays = _context.BillPay.Where(x => accounts.Contains(x.AccountNumber)).OrderBy(bill => bill.ScheduleTimeUtc);
+            // Get active Bills
+            var billPays = _context.BillPay.
+                Where(x => accounts.Contains(x.AccountNumber)).
+                Where(x => x.State == State.active).
+                OrderBy(bill => bill.ScheduleTimeUtc);
+
             return View(await billPays.ToPagedListAsync(page, 6));
         }
+
+        public async Task<IActionResult> FailedBills(int page = 1)
+        {
+            // Validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
+            // Get active customer accounts
+            var accounts = _context.Account.
+                Where(x => x.CustomerID == customer.CustomerID).
+                Select(x => x.AccountNumber).
+                ToList();
+
+            // Get active Bills
+            var billPays = _context.BillPay.
+                Where(x => accounts.Contains(x.AccountNumber)).
+                Where(x => x.State == State.failed).
+                OrderBy(bill => bill.ScheduleTimeUtc);
+
+            return View(await billPays.ToPagedListAsync(page, 6));
+        }
+
+
 
 
         // GET: BillPay/Create
@@ -101,6 +133,101 @@ namespace WebBanking.Views
 
             return RedirectToAction(nameof(Index));
 
+        }
+
+        // GET: BillPay/Reschedule/5
+        public async Task<IActionResult> Reschedule(int? id)
+        {
+            // validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
+            if (id == null)
+                return NotFound();
+
+            if (!OwnsBill((int)id, customer))
+                return NotFound();
+
+            var billPay = await _context.BillPay.FindAsync(id);
+            if (billPay == null || billPay.State != State.failed)
+                return NotFound();
+
+
+            HttpContext.Session.SetInt32("RescheduleBillID", billPay.AccountNumber);
+
+            return View(billPay);
+
+        }
+
+        // POST: BillPay/Edit/5
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reschedule([Bind("BillPayID,ScheduleTimeUtc")] BillPay billPayV)
+        {
+            var billPayID = HttpContext.Session.GetInt32("RescheduleBillID");
+            var customer = GetActiveCustomer();
+
+            if (customer == null ||
+                billPayID == null ||
+                billPayID != billPayV.BillPayID ||
+                !OwnsBill((int)billPayID, customer))
+
+                return NotFound();
+
+            HttpContext.Session.Remove("RescheduleBillID");
+
+
+            // chech bill details posted match bill details stored
+
+
+
+            // Check that date is in the future
+            if (billPayV.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
+            {
+                ModelState.AddModelError(nameof(billPayV.ScheduleTimeUtc), "Schedule date and time must be in the future");
+                return View(billPayV);
+            }
+
+            var billPay = await _context.BillPay.FindAsync(billPayV.BillPayID);
+
+
+            billPay.ScheduleTimeUtc = billPayV.ScheduleTimeUtc;
+            billPay.State = State.active;
+
+            try
+            {
+                _context.Update(billPay);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BillPayExists(billPay.BillPayID))
+                    return NotFound();
+                else
+                    throw;
+            }
+            return RedirectToAction(nameof(FailedBills));
+        }
+
+        public async Task<IActionResult> TryAgain(int? id)
+        {
+            var customer = GetActiveCustomer();
+            var billPay = _context.BillPay.Find(id);
+
+            if (customer == null || // customer is logged in
+                billPay == null || // bill exist
+                !OwnsBill((int)id, customer) || // and the customer owns it
+                billPay.State == State.active) // and the bill is not active
+                
+                return NotFound();
+
+            billPay.State = State.active;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(FailedBills));
         }
 
         // GET: BillPay/Edit/5
