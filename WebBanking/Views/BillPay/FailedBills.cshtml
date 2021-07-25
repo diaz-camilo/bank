@@ -42,7 +42,7 @@
         @Html.DisplayFor(modelItem => item.Amount)
     </td>
     <td>
-        @Html.DisplayFor(modelItem => item.ScheduleTimeUtc)
+        @item.ScheduleTimeUtc.ToString("dd MMM yyyy H:mm")
     </td>
     <td>
         @Html.DisplayFor(modelItem => item.Period)

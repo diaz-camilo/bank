@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
+using WebBanking.ViewModels;
 
 namespace WebBanking.Controllers
 {
@@ -14,147 +16,85 @@ namespace WebBanking.Controllers
     {
         private readonly WebBankContext _context;
 
-        public AccountController(WebBankContext context)
-        {
-            _context = context;
-        }
+        public AccountController(WebBankContext context) => _context = context;
 
-        // GET: Account
-        public async Task<IActionResult> Index()
+        //GET: Customer/Deposit/5
+        public async Task<IActionResult> Deposit(int? id)
         {
-            var webBankContext = _context.Account.Include(a => a.Customer);
-            return View(await webBankContext.ToListAsync());
-        }
-
-        // GET: Account/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer
+                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
                 return NotFound();
-            }
 
-            var account = await _context.Account
-                .Include(a => a.Customer)
-                .FirstOrDefaultAsync(m => m.AccountNumber == id);
-            if (account == null)
-            {
-                return NotFound();
-            }
 
-            return View(account);
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
+
+
+            return View(new TransactionViewModel { AccountNumber = (int)id });
         }
 
-        // GET: Account/Create
-        public IActionResult Create()
-        {
-            ViewData["CustomerID"] = new SelectList(_context.Customer, "CustomerID", "Name");
-            return View();
-        }
-
-        // POST: Account/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AccountNumber,Type,CustomerID,Balance")] Account account)
+        //POST: Customer/Deposit/5
+        public async Task<IActionResult> Deposit(TransactionViewModel transaction)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CustomerID"] = new SelectList(_context.Customer, "CustomerID", "Name", account.CustomerID);
-            return View(account);
-        }
-
-        // GET: Account/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
+            if (customer == null)
                 return NotFound();
-            }
 
-            var account = await _context.Account.FindAsync(id);
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
             if (account == null)
-            {
                 return NotFound();
-            }
-            ViewData["CustomerID"] = new SelectList(_context.Customer, "CustomerID", "Name", account.CustomerID);
-            return View(account);
+
+            if (!ModelState.IsValid)
+                return View(transaction);
+
+            HttpContext.Session.SetInt32("depositAccountNum", transaction.AccountNumber);
+            HttpContext.Session.SetString("depositAmount", transaction.Amount.ToString());
+
+            return RedirectToAction(nameof(DepositConfirm));
         }
 
-        // POST: Account/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        public IActionResult DepositConfirm()
+        {
+            int? AccountNum = HttpContext.Session.GetInt32("depositAccountNum");
+            decimal Amount;
+            if (! Decimal.TryParse(HttpContext.Session.GetString("depositAmount"), out Amount) || AccountNum == null) 
+                return NotFound();
+
+            return View(new TransactionViewModel { AccountNumber = (int)AccountNum, Amount = Amount });
+        }
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AccountNumber,Type,CustomerID,Balance")] Account account)
+        //POST: Customer/Deposit/5
+        public async Task<IActionResult> DepositConfirm(int id = 1)
         {
-            if (id != account.AccountNumber)
-            {
+            int? AccountNum = HttpContext.Session.GetInt32("depositAccountNum");
+            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = await _context.Customer.FindAsync(customerID);
+            decimal Amount;
+            if (!Decimal.TryParse(HttpContext.Session.GetString("depositAmount"), out Amount) || AccountNum == null || Amount <= 0 || customer == null)
                 return NotFound();
-            }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(account);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AccountExists(account.AccountNumber))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CustomerID"] = new SelectList(_context.Customer, "CustomerID", "Name", account.CustomerID);
-            return View(account);
-        }
-
-        // GET: Account/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var account = await _context.Account
-                .Include(a => a.Customer)
-                .FirstOrDefaultAsync(m => m.AccountNumber == id);
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == AccountNum);
             if (account == null)
-            {
                 return NotFound();
-            }
+            
+            // Note this code could be moved out of the controller, e.g., into the Model.
+            account.Balance += Amount;
+            account.Transactions.Add(
+                new Transaction
+                {
+                    TransactionType = TransactionType.Deposit,
+                    Amount = Amount,
+                    TransactionTimeUtc = DateTime.UtcNow
+                });
 
-            return View(account);
-        }
-
-        // POST: Account/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var account = await _context.Account.FindAsync(id);
-            _context.Account.Remove(account);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AccountExists(int id)
-        {
-            return _context.Account.Any(e => e.AccountNumber == id);
-        }
     }
 }
