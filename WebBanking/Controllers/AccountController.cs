@@ -103,25 +103,83 @@ namespace WebBanking.Controllers
         }
 
         //GET: Customer/Withdraw/5
-        public async Task<IActionResult> Withdraw(int? id)
+        public IActionResult Withdraw(int? id)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer.FindAsync(customerID);
-            if (customer == null
-                || customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
+            var customer = getCustomerFromSession();
+
+            if (customer == null ||
+                customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
                 return NotFound();
 
-            return View(new TransactionViewModel() { AccountNumber = (int)id });
+            return View(new TransactionViewModel() { AccountNumber = id.Value });
         }
 
         [HttpPost]
         //POST: Customer/Withdraw/5
         public async Task<IActionResult> Withdraw(TransactionViewModel transaction)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer.FindAsync(customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
                 return NotFound();
+
+            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
+            if (account == null)
+                return NotFound();
+
+
+            decimal fee = account.FreeTransactions <= 0 ? 0.1m : 0;
+
+            // validate suficient funds acording to account type
+            if (account.Type == AccountType.Savings)
+                if (account.Balance - transaction.Amount - fee < 0)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
+            if (account.Type == AccountType.Checking)
+                if (account.Balance - transaction.Amount - fee < 200)
+                    ModelState.AddModelError(nameof(transaction.Amount), "Insuficient funds");
+
+            if (!ModelState.IsValid)
+                return View(transaction);
+
+            HttpContext.Session.SetString("jsonWithdrawViewModelObject", JsonConvert.SerializeObject(transaction));
+            return RedirectToAction(nameof(WithdrawConfirm));
+        }
+
+
+        //POST: Customer/Withdraw/5
+        public async Task<IActionResult> WithdrawConfirm()
+        {
+            var customer = getCustomerFromSession();
+            if (customer == null)
+                return NotFound();
+
+            var jsonTransaction = HttpContext.Session.GetString
+                ("jsonWithdrawViewModelObject");
+
+            TransactionViewModel transaction = jsonTransaction == null ?
+                null :
+                JsonConvert.DeserializeObject<TransactionViewModel>(jsonTransaction);
+
+
+
+            return transaction == null ?
+                RedirectToAction(nameof(Index), nameof(Customer)) :
+                View(transaction);
+        }
+
+        [HttpPost]
+        //POST: Customer/Withdraw/5
+        public async Task<IActionResult> WithdrawConfirm(int i)
+        {
+            var customer = getCustomerFromSession();
+            if (customer == null)
+                return NotFound();
+
+            var jsonTransaction = HttpContext.Session.GetString
+                ("jsonWithdrawViewModelObject");
+
+            TransactionViewModel transaction = jsonTransaction == null ?
+                null :
+                JsonConvert.DeserializeObject<TransactionViewModel>(jsonTransaction);
 
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
             if (account == null)
@@ -164,34 +222,27 @@ namespace WebBanking.Controllers
             }
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index), nameof(Customer));
+            return RedirectToAction(nameof(ClearTransactions));
         }
 
         public async Task<IActionResult> Transfer()
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
-            {
                 return NotFound();
-            }
 
             return View(customer);
         }
 
         public async Task<IActionResult> TransferForm(int? id)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
                 return NotFound();
+
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
             if (account == null)
                 return NotFound();
-
-
 
             return View(new TransactionViewModel() { AccountNumber = account.AccountNumber });
         }
@@ -199,9 +250,7 @@ namespace WebBanking.Controllers
         [HttpPost]
         public async Task<IActionResult> TransferForm(TransactionViewModel transaction)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
                 return NotFound();
 
@@ -242,9 +291,7 @@ namespace WebBanking.Controllers
 
         public async Task<IActionResult> TransferFormConfirm()
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
                 return NotFound();
 
@@ -255,7 +302,7 @@ namespace WebBanking.Controllers
                 null :
                 JsonConvert.DeserializeObject<TransactionViewModel>(jsonTransaction);
 
-             
+
 
             return transaction == null ?
                 RedirectToAction(nameof(Index), nameof(Customer)) :
@@ -268,9 +315,7 @@ namespace WebBanking.Controllers
 
         public async Task<IActionResult> TransferFormConfirm(int i)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customer = getCustomerFromSession();
             if (customer == null)
                 return NotFound();
 
@@ -354,6 +399,15 @@ namespace WebBanking.Controllers
             HttpContext.Session.Remove("jsonTransactionViewModelObject");
 
             return RedirectToAction(nameof(Index), nameof(Customer));
+        }
+
+        private Customer getCustomerFromSession()
+        {
+            int? customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customer = customerID == null ? null : _context.Customer
+                .FirstOrDefault(m => m.CustomerID == customerID);
+
+            return customer;
         }
 
     }

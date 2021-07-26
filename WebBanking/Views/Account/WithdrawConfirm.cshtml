@@ -1,0 +1,32 @@
+﻿@model WebBanking.ViewModels.TransactionViewModel
+
+
+@{ ViewData["Title"] = "Withdraw"; }
+
+<h1>Account Number - @Model.AccountNumber</h1>
+<h3>Review and Confirm Withdraw</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="WithdrawConfirm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label"></label>
+                <label class="form-control">@Html.DisplayFor(x => x.Amount)</label>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Confirm" class="btn btn-success" />
+                <a asp-action="ClearTransactions" class="btn btn-danger">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to Accounts</a>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
