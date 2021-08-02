@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 using utils;
 
-namespace WebBanking.Models
+namespace BankAPI.Models
 {
     public enum Period
     {

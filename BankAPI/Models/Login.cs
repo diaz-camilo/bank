@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebBanking.Models
+namespace BankAPI.Models
 {
     public class Login
     {
