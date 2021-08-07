@@ -1,0 +1,27 @@
+﻿@model Customer;
+
+@{
+    ViewData["Title"] = "Update Customer Details";
+}
+<h1>@ViewData["Title"]</h1>
+<hr>
+<div class="row">
+    <div class="col-md-4">
+        <partial name="Admin/_GetCustomerDetails" model="@Model" />
+    </div>
+</div>
+<hr />
+<h1 class="text-danger">Customer details could not be updated</h1>
+<div class="row">
+    <div class="col-md-4">        
+        <partial name="Admin/_CustomerDetailsForm" model="@Model" />        
+    </div>
+</div>
+
+<hr>
+
+
+
+@*@section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }*@

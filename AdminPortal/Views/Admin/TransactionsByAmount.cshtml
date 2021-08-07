@@ -1,0 +1,82 @@
+﻿@model TransactionByAmountViewModel;
+
+@{
+    ViewData["Title"] = "Transactions by Amount";
+}
+<h1>Transactions by Amount</h1>
+<hr>
+<form asp-action="TransactionsByAmount" class="form">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col form-group">
+                <label asp-for="MinAmount" class="control-label"></label>
+                <input asp-for="MinAmount" class="form-control" />
+                <span asp-validation-for="MinAmount" class="text-danger"></span>
+            </div>
+            <div class="col form-group">
+                <label asp-for="MaxAmount" class="control-label"></label>
+                <input asp-for="MaxAmount" class="form-control" />
+                <span asp-validation-for="MaxAmount" class="text-danger"></span>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col form-group">
+                <input type="submit" value="Get Transactions" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</form>
+<hr>
+
+@if (Model.Transactions != null && Model.Transactions.Count != 0)
+{
+    <div>
+        <h1>Transactions between @Html.DisplayFor(x => x.MinAmount) And @Html.DisplayFor(x => x.MaxAmount) </h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(x => x.Transactions[0].TransactionTimeUtc)</th>
+                    <th>@Html.DisplayNameFor(x => x.Transactions[0].Comment)</th>
+                    <th>@Html.DisplayNameFor(x => x.Transactions[0].TransactionType)</th>
+                    <th>@Html.DisplayNameFor(x => x.Transactions[0].DestinationAccountNumber)</th>
+                    <th>@Html.DisplayNameFor(x => x.Transactions[0].Amount)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <tr>
+                        <td>@transaction.TransactionTimeUtc.ToLocalTime().ToString("dd MMM yyyy H:mm")</td>
+                        <td>@Html.DisplayFor(x => transaction.Comment)</td>
+                        <td>@Html.DisplayFor(x => transaction.TransactionType)</td>
+                        <td>@Html.DisplayFor(x => transaction.DestinationAccountNumber)</td>
+                        <td>
+                            @if (transaction.TransactionType == TransactionType.Withdraw ||
+                                transaction.TransactionType == TransactionType.OutgoingTransfer ||
+                                transaction.TransactionType == TransactionType.ServiceCharge ||
+                                (transaction.TransactionType == TransactionType.BillPay &&
+                                transaction.Amount != 0))
+
+                            {<span>- </span>} @Html.DisplayFor(x => transaction.Amount)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+}
+else
+{
+    <div>
+        <h3>No Transactions to diplay within range</h3>
+    </div>
+}
+
+@*@section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }*@
+

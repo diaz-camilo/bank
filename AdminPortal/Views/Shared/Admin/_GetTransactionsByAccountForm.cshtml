@@ -1,0 +1,22 @@
+﻿@model TransactionByAccountViewModel
+
+<form asp-action="TransactionsByAccountNum">
+    <div class="form-group">
+        <label asp-for="AccountNum" class="control-label"></label>
+        <input asp-for="AccountNum" class="form-control" />
+        <span asp-validation-for="AccountNum" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="StartDate" class="control-label"></label>
+        <input asp-for="StartDate" type="date" class="form-control" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="EndDate" class="control-label"></label>
+        <input asp-for="EndDate" type="date" class="form-control" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Get Transactions" class="btn btn-primary form-control" />
+    </div>
+</form>

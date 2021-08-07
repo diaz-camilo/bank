@@ -55,5 +55,14 @@ namespace BankAPI.Models.DataManagers
 
             return true;
         }
+
+        public Customer GetCustomerDetails(int customerID)
+        {
+            var customer = _context.Customer.Find(customerID);
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            return customer;
+        }
     }
 }

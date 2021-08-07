@@ -58,6 +58,12 @@ namespace BankAPI.Controllers
             return _repo.GetTransactionsByAmount(min, max);
         }
 
+        [HttpGet("GetCustomerDetails/{customerID}")]
+        public Customer GetCustomer(int customerID)
+        {
+            return _repo.GetCustomerDetails(customerID);
+        }
+
         [HttpPut("UpdateCustomerDetails/{customerID}")]
         public bool PutCustomer(int customerID, [FromBody] Customer customer)
         {

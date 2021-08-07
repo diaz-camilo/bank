@@ -1,0 +1,36 @@
+﻿@model CustomerAccessViewModel;
+
+@{
+    ViewData["Title"] = "Customer Access";
+}
+<h1>@ViewData["Title"]</h1>
+<hr>
+<div class="container">
+    <form asp-action="CustomerAccess">
+        <div class="row">
+            <div class="col form-group">
+                <label asp-for="CustomerID" class="control-label"></label>
+                <input asp-for="CustomerID" class="form-control" />
+                <span asp-validation-for="CustomerID" class="text-danger"></span>
+            </div>
+            <div class="col form-group">
+                <label asp-for="LoginState" class="control-label"></label>
+                <select asp-for="LoginState" class="form-control" asp-items="Model.LoginStates"></select>
+                <span asp-validation-for="LoginStates" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row form-group">
+            <input type="submit" value="Update User Access" class="btn btn-primary form-control" />
+        </div>
+    </form>
+</div>
+<hr>
+
+@if (Model.Response != null)
+{
+    <h3>@Model.Response</h3>
+    <p><b>Customer ID:</b> @Model.CustomerID<br />
+    <b>Request:</b> @{var r = Model.LoginState == true ? "Lock Customer" : "Unlock Customer";}</p>
+}
+

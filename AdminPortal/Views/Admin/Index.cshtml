@@ -1,0 +1,114 @@
+﻿@model AdminPortal.ViewModels.IndexViewModel;
+
+@{
+    ViewData["Title"] = "Admin Index";
+}
+
+<h1>Admin</h1>
+
+<h4>Actions</h4>
+<hr>
+<div class="container">
+    <div class="row">
+        <h3>Transactions by account number</h3>
+
+    </div>
+    <div class="row">
+        <partial name="Admin/_GetTransactionsByAccountForm" for="TransactionByAccountViewModel" />
+        @*<form asp-action="TransactionsByAccountNum">
+            <div class="form-group">
+                <label asp-for="AccountNum" class="control-label"></label>
+                <input asp-for="AccountNum" class="form-control" />
+                <span asp-validation-for="AccountNum" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" type="date" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" type="date" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Get Transactions" class="btn btn-primary form-control" />
+            </div>
+        </form>*@
+    </div>
+    <hr />
+    <div class="row">
+        <h3>Transaction history by amount</h3>
+    </div>
+    <div class="row">
+        <form asp-action="TransactionsByAmount">
+            <div class="form-group">
+                <label asp-for="MinAmount" class="control-label"></label>
+                <input asp-for="MinAmount" class="form-control" />
+                <span asp-validation-for="MinAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MaxAmount" class="control-label"></label>
+                <input asp-for="MaxAmount" class="form-control" />
+                <span asp-validation-for="MaxAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Get Transactions" class="btn btn-primary form-control" />
+            </div>
+        </form>
+    </div>
+    <hr />
+    <div class="row">
+        <h3>Update customer details</h3>
+    </div>
+    <div class="row">
+        <partial name="Admin/_GetCustomerDetails" for="Customer" />
+    </div>
+    <hr />
+    <div class="row">
+        <h3>Block/Unblock Customer</h3>
+    </div>
+    <div class="row">
+        <form asp-action="CustomerAccess">
+            <div class="form-group">
+                <label asp-for="CustomerID" class="control-label"></label>
+                <input asp-for="CustomerID" class="form-control" />
+                <span asp-validation-for="CustomerID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LoginState" class="control-label"></label>
+                <select asp-for="LoginState" class="form-control" asp-items="Model.LoginStates"></select>
+                <span asp-validation-for="LoginStates" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Update User Access" class="btn btn-primary form-control" />
+            </div>
+        </form>
+    </div>
+    <hr />
+    <div class="row">
+        <h3>Block/Unblock BillPay</h3>
+    </div>
+    <div class="row">
+        <form asp-action="BillPayState">
+            <div class="form-group">
+                <label asp-for="BillPayID" class="control-label"></label>
+                <input asp-for="BillPayID" class="form-control" />
+                <span asp-validation-for="BillPayID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BillPayState" class="control-label"></label>
+                <select asp-for="BillPayState" class="form-control" asp-items="Model.BillPayStates"></select>
+                <span asp-validation-for="LoginStates" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Update BillPay State" class="btn btn-primary form-control" />
+            </div>
+        </form>
+    </div>
+    <hr />
+</div>
+
+    @*@section Scripts {
+            @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+        }*@

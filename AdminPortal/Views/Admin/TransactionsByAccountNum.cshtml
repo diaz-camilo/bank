@@ -1,0 +1,86 @@
+﻿@model TransactionByAccountViewModel;
+
+@{
+    ViewData["Title"] = "Transactions by Account Number";
+}
+<h1>Transactions by Account Number</h1>
+<hr>
+@*<form asp-action="TransactionsByAccountNum" class="form">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>*@
+    <div class="container">
+        <div class="row">
+            <partial name="Admin/_GetTransactionsByAccountForm" model="@Model"/>
+            @*<div class="col form-group">
+                <label asp-for="AccountNum" class="control-label"></label>
+                <input asp-for="AccountNum" class="form-control" />
+                <span asp-validation-for="AccountNum" class="text-danger"></span>
+            </div>
+            <div class="col form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" type="date" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="col form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" type="date" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>*@
+        </div>
+        @*<div class="row">
+            <div class="col form-group">
+                <input type="submit" value="Get Transactions" class="btn btn-primary" />
+            </div>
+        </div>*@
+    </div>
+@*</form>*@
+<hr>
+
+@if (Model.transactions != null && Model.transactions.Count != 0)
+{
+    <div>
+        <h1>Transactions for account number @Model.transactions.First().AccountNumber </h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(x => x.transactions[0].TransactionTimeUtc)</th>
+                    <th>@Html.DisplayNameFor(x => x.transactions[0].Comment)</th>
+                    <th>@Html.DisplayNameFor(x => x.transactions[0].TransactionType)</th>
+                    <th>@Html.DisplayNameFor(x => x.transactions[0].DestinationAccountNumber)</th>
+                    <th>@Html.DisplayNameFor(x => x.transactions[0].Amount)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in Model.transactions)
+                {
+                    <tr>
+                        <td>@transaction.TransactionTimeUtc.ToLocalTime().ToString("dd MMM yyyy H:mm")</td>
+                        <td>@Html.DisplayFor(x => transaction.Comment)</td>
+                        <td>@Html.DisplayFor(x => transaction.TransactionType)</td>
+                        <td>@Html.DisplayFor(x => transaction.DestinationAccountNumber)</td>
+                        <td>
+                            @if (transaction.TransactionType == TransactionType.Withdraw ||
+                transaction.TransactionType == TransactionType.OutgoingTransfer ||
+                transaction.TransactionType == TransactionType.ServiceCharge ||
+                (transaction.TransactionType == TransactionType.BillPay &&
+                transaction.Amount != 0))
+
+                            {<span>- </span>} @Html.DisplayFor(x => transaction.Amount)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+}
+else
+{
+    <div>
+        <h3>No Transactions to diplay within range or Acount number does not exist</h3>
+    </div>
+}
+
+@*@section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }*@
