@@ -1,0 +1,17 @@
+﻿@model BillPayStateViewModel
+
+<form asp-action="BillPayState">
+    <div class="form-group">
+        <label asp-for="BillPayID" class="control-label"></label>
+        <input asp-for="BillPayID" class="form-control" />
+        <span asp-validation-for="BillPayID" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="BillPayState" class="control-label"></label>
+        <select asp-for="BillPayState" class="form-control" asp-items="Model.BillPayStates"></select>
+        <span asp-validation-for="BillPayState" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Update BillPay State" class="btn btn-primary form-control" />
+    </div>
+</form>

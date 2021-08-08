@@ -1,0 +1,35 @@
+﻿@model List<Transaction>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(x => x[0].TransactionTimeUtc)</th>
+            <th>@Html.DisplayNameFor(x => x[0].Comment)</th>
+            <th>@Html.DisplayNameFor(x => x[0].TransactionType)</th>
+            <th>@Html.DisplayNameFor(x => x[0].AccountNumber)</th>
+            <th>@Html.DisplayNameFor(x => x[0].DestinationAccountNumber)</th>
+            <th>@Html.DisplayNameFor(x => x[0].Amount)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var transaction in Model)
+        {
+        <tr>
+            <td>@transaction.TransactionTimeUtc.ToLocalTime().ToString("dd MMM yyyy H:mm")</td>
+            <td>@Html.DisplayFor(x => transaction.Comment)</td>
+            <td>@Html.DisplayFor(x => transaction.TransactionType)</td>
+            <td>@Html.DisplayFor(x => transaction.AccountNumber)</td>
+            <td>@Html.DisplayFor(x => transaction.DestinationAccountNumber)</td>
+            <td>
+                @if (transaction.TransactionType == TransactionType.Withdraw ||
+                  transaction.TransactionType == TransactionType.OutgoingTransfer ||
+                  transaction.TransactionType == TransactionType.ServiceCharge ||
+                  (transaction.TransactionType == TransactionType.BillPay &&
+                  transaction.Amount != 0))
+
+                {<span>- </span>} @Html.DisplayFor(x => transaction.Amount)
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

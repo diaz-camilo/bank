@@ -12,6 +12,7 @@ namespace AdminPortal.Models
 
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [RegularExpression(@"^\d{4}$")]
+        [Display(Name ="Customer ID")]        
         public int CustomerID { get; set; }
 
         [Required]
@@ -34,9 +35,5 @@ namespace AdminPortal.Models
 
         [RegularExpression(@"^04\d{2}(?:\s\d{3}){2}$", ErrorMessage ="Australian mobile number in the format 0444 111 222")]
         public string Mobile { get; set; }
-
-        public virtual List<Account> Accounts { get; set; }
-
-        public virtual Login Login { get; set; }
     }
 }

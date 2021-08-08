@@ -11,8 +11,6 @@ using System.Text;
 using AdminPortal.Models;
 using System.Text.RegularExpressions;
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace AdminPortal.Controllers
 {
     public class AdminController : Controller
@@ -28,33 +26,33 @@ namespace AdminPortal.Controllers
             _clientFactory = clientFactory;
         }
 
-        // GET: /<controller>/
-        public IActionResult Index(AdminIndexErrorEnum error, string errorMessage)
-        {
-            //if (errorMessage == null)
-            //    return View(new IndexViewModel { Error = AdminIndexErrorEnum.noError });
 
+        public IActionResult Index()
+        {
             return View(new IndexViewModel
-                ()
-            //{ Error = error, ErrorMessage = errorMessage }
-            );
+            {
+                BillPayStateViewModel = new BillPayStateViewModel(),
+                CustomerAccessViewModel = new CustomerAccessViewModel()
+            });
+        }
+
+        [HttpGet]
+        public IActionResult TransactionsByAccountNum()
+        {
+            return View(new TransactionByAccountViewModel());
         }
 
         [HttpPost]
-        [HttpGet]
         public async Task<IActionResult> TransactionsByAccountNum(TransactionByAccountViewModel transactionByAccountViewModel)
         {
             if (!ModelState.IsValid)
                 return View(transactionByAccountViewModel);
 
-
+            // Validate that start date is before end date
             if (transactionByAccountViewModel.StartDate != null && transactionByAccountViewModel.EndDate != null)
             {
-
                 var startDate = transactionByAccountViewModel.StartDate.Split('-');
                 var endDate = transactionByAccountViewModel.EndDate.Split('-');
-
-
 
                 if (new DateTime(Int32.Parse(startDate[0]), Int32.Parse(startDate[1]), Int32.Parse(startDate[2])) >
                     new DateTime(Int32.Parse(endDate[0]), Int32.Parse(endDate[1]), Int32.Parse(endDate[2])))
@@ -66,116 +64,149 @@ namespace AdminPortal.Controllers
 
             HttpResponseMessage response;
 
+            // Get transactions for the specified time interval or get all transactions if no interval provided or only one date provided
             if (transactionByAccountViewModel.StartDate == null || transactionByAccountViewModel.EndDate == null)
                 response = await Client.GetAsync($"/BankAPI/Admin/transactions/{transactionByAccountViewModel.AccountNum}");
             else
                 response = await Client.GetAsync($"/BankAPI/Admin/transactionsByDate/{transactionByAccountViewModel.AccountNum}/{transactionByAccountViewModel.StartDate}/{transactionByAccountViewModel.EndDate}");
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception();
+            {
+                ModelState.AddModelError(nameof(TransactionByAccountViewModel.AccountNum), "The Server enconter an error, please try again.");
+                return View(transactionByAccountViewModel);
+            }
 
-
-
-            // Storing the response details received from web api.
+            // deserialize response into a list of transactions and pass it to the view
             var result = await response.Content.ReadAsStringAsync();
 
-            // Deserializing the response received from web api and storing into a list.
             var transactions = JsonConvert.DeserializeObject<List<Transaction>>(result);
 
             transactions.OrderBy(x => x.TransactionTimeUtc);
 
             transactionByAccountViewModel.transactions = transactions;
 
-
             return View(transactionByAccountViewModel);
         }
 
-        public async Task<IActionResult> TransactionsByAmount(TransactionByAmountViewModel model)
+        [HttpGet]
+        public IActionResult TransactionsByAmount()
         {
-            if (model.MaxAmount <= model.MinAmount)
-                ModelState.AddModelError(nameof(model.MaxAmount), "Max Amount must be greater than Min Amount");
+            return View(new TransactionByAmountViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TransactionsByAmount(TransactionByAmountViewModel transactionByAmountViewModel)
+        {
+            if (transactionByAmountViewModel.MaxAmount <= transactionByAmountViewModel.MinAmount)
+                ModelState.AddModelError(nameof(transactionByAmountViewModel.MaxAmount), "Max Amount must be greater than Min Amount");
 
             if (!ModelState.IsValid)
-                return View(model);
+                return View(transactionByAmountViewModel);
 
-            var response = await Client.GetAsync($"/BankAPI/Admin/transactionsByAmount/{model.MinAmount}/{model.MaxAmount}");
+            var response = await Client.GetAsync($"/BankAPI/Admin/transactionsByAmount/{transactionByAmountViewModel.MinAmount}/{transactionByAmountViewModel.MaxAmount}");
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception();
+            {
+                ModelState.AddModelError(nameof(TransactionByAmountViewModel.MinAmount), "The Server enconter an error, please try again.");
+                return View(transactionByAmountViewModel);
+            }
 
+            // deserialize response into a list of transactions and pass it to the view
             var result = await response.Content.ReadAsStringAsync();
 
             var transactions = JsonConvert.DeserializeObject<List<Transaction>>(result);
 
             transactions.OrderBy(x => x.TransactionTimeUtc);
 
-            model.Transactions = transactions;
+            transactionByAmountViewModel.Transactions = transactions;
 
-            return View(model);
+            return View(transactionByAmountViewModel);
         }
 
-        public async Task<IActionResult> CustomerAccess(CustomerAccessViewModel model)
+        [HttpGet]
+        public IActionResult CustomerAccess()
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var response = await Client.PutAsync($"/BankAPI/Admin/BlockCustomerByID/{model.CustomerID}", JsonContent.Create(model.LoginState));
-
-            if (!response.IsSuccessStatusCode)
-                model.Response = @"Customer was not found";
-            else
-                model.Response = "Customer access has been updated";
-
-            return View(model);
+            return View(new CustomerAccessViewModel());
         }
 
-        public async Task<IActionResult> BillPayState(BillPayStateViewModel model)
+        [HttpPost]
+        public async Task<IActionResult> CustomerAccess(CustomerAccessViewModel customerAccessViewModel)
         {
             if (!ModelState.IsValid)
-                return View(model);
+                return View(customerAccessViewModel);
 
-            var response = await Client.PutAsync($"/BankAPI/Admin/BlockBillPayByID/{model.BillPayID}/{model.BillPayState}", JsonContent.Create(model.BillPayState));
+            var response = await Client.PutAsync($"/BankAPI/Admin/BlockCustomerByID/{customerAccessViewModel.CustomerID}", JsonContent.Create(customerAccessViewModel.LoginState));
 
             if (!response.IsSuccessStatusCode)
-                model.Response = @"BillPay was not found";
+                customerAccessViewModel.Response = @"Customer was not found";
             else
-                model.Response = "BillPay State has been updated";
+                customerAccessViewModel.Response = "Customer access has been updated";
 
-            return View(model);
+            return View(customerAccessViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult BillPayState()
+        {
+            return View(new BillPayStateViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BillPayState(BillPayStateViewModel billPayStateViewModel)
+        {
+            if (!ModelState.IsValid)
+                return View(billPayStateViewModel);
+
+            var response = await Client.PutAsync($"/BankAPI/Admin/BlockBillPayByID/{billPayStateViewModel.BillPayID}/{billPayStateViewModel.BillPayState}", JsonContent.Create(billPayStateViewModel.BillPayState));
+
+            if (!response.IsSuccessStatusCode)
+                billPayStateViewModel.Response = @"BillPay was not found";
+            else
+                billPayStateViewModel.Response = "BillPay State has been updated";
+
+            return View(billPayStateViewModel);
 
         }
 
         [HttpGet]
-        public async Task<IActionResult> UpdateCustomerDetails(int? id,[Bind(nameof(Customer.CustomerID))] Customer customer)
+        public async Task<IActionResult> UpdateCustomerDetails(int? id, [Bind(nameof(Customer.CustomerID))] Customer customer)
         {
+            // clear model errors as they will be manually validated below
             ModelState.Clear();
 
+            // if coming from nav link return view
+            if (id.HasValue && id.Value == 1)
+                return View(new Customer());
+
+            // Validate Customer ID
             if (customer == null || !Regex.IsMatch(customer.CustomerID.ToString(), @"^\d{4}$"))
             {
                 ModelState.AddModelError(nameof(customer.CustomerID), "Customer ID must be a 4 digit number");
                 return View(new Customer());
             }
 
+            // get customer details from API
             var response = await Client.GetAsync($"/BankAPI/Admin/GetCustomerDetails/{customer.CustomerID}");
 
+            // if no Customer found add error message and return view
             if (!response.IsSuccessStatusCode)
             {
                 ModelState.AddModelError(nameof(customer.CustomerID), "Customer not found, please check the customer ID and try again");
                 return View(customer);
             }
 
+            // deserialize response and return view
             var content = await response.Content.ReadAsStringAsync();
 
             customer = JsonConvert.DeserializeObject<Customer>(content);
 
             return View(customer);
-
-
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateCustomerDetails(Customer customer)
         {
+
             if (!ModelState.IsValid)
                 return View("UpdateCustomerDetailsError", customer);
 
@@ -184,8 +215,8 @@ namespace AdminPortal.Controllers
             if (!response.IsSuccessStatusCode)
                 ModelState.AddModelError(nameof(customer.CustomerID), "Error while trying to update customer details");
 
-            
-            return View("UpdateCustomerDetailsSuccess",customer);
+
+            return View("UpdateCustomerDetailsSuccess", customer);
         }
     }
 }

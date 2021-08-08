@@ -29,6 +29,7 @@ namespace AdminPortal
             // Configure api client.
             services.AddHttpClient("api", client =>
             {
+                
                 client.BaseAddress = new Uri("https://localhost:6131");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });

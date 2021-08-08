@@ -20,7 +20,7 @@ namespace AdminPortal.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index","Admin");
         }
 
         public IActionResult Privacy()
