@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebBanking.Models;
 
@@ -6,7 +7,7 @@ namespace WebBanking.Data
 {
 
     // Context is the database.
-    public class WebBankContext : DbContext
+    public class WebBankContext : IdentityDbContext
     {
         public WebBankContext(DbContextOptions<WebBankContext> options) : base(options)
         { }
