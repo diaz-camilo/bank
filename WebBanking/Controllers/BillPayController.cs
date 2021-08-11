@@ -65,10 +65,32 @@ namespace WebBanking.Views
                 Select(x => x.AccountNumber).
                 ToList();
 
-            // Get active Bills
+            // Get faild Bills
             var billPays = _context.BillPay.
                 Where(x => accounts.Contains(x.AccountNumber)).
                 Where(x => x.State == State.failed).
+                OrderBy(bill => bill.ScheduleTimeUtc);
+
+            return View(await billPays.ToPagedListAsync(page, 6));
+        }
+
+        public async Task<IActionResult> BlockedBills(int page = 1)
+        {
+            // Validate customer
+            var customer = GetActiveCustomer();
+            if (customer == null)
+                return NotFound();
+
+            // Get active customer accounts
+            var accounts = _context.Account.
+                Where(x => x.CustomerID == customer.CustomerID).
+                Select(x => x.AccountNumber).
+                ToList();
+
+            // Get blocked Bills
+            var billPays = _context.BillPay.
+                Where(x => accounts.Contains(x.AccountNumber)).
+                Where(x => x.State == State.blocked).
                 OrderBy(bill => bill.ScheduleTimeUtc);
 
             return View(await billPays.ToPagedListAsync(page, 6));
@@ -164,14 +186,14 @@ namespace WebBanking.Views
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Reschedule([Bind("BillPayID,ScheduleTimeUtc")] BillPay billPayV)
+        public async Task<IActionResult> Reschedule([Bind("BillPayID,ScheduleTimeUtc")] BillPay billPayPosted)
         {
             var billPayID = HttpContext.Session.GetInt32("RescheduleBillID");
             var customer = GetActiveCustomer();
 
             if (customer == null ||
                 billPayID == null ||
-                billPayID != billPayV.BillPayID ||
+                billPayID != billPayPosted.BillPayID ||
                 !OwnsBill((int)billPayID, customer))
 
                 return NotFound();
@@ -184,16 +206,19 @@ namespace WebBanking.Views
 
 
             // Check that date is in the future
-            if (billPayV.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
+            if (billPayPosted.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
             {
-                ModelState.AddModelError(nameof(billPayV.ScheduleTimeUtc), "Schedule date and time must be in the future");
-                return View(billPayV);
+                ModelState.AddModelError(nameof(billPayPosted.ScheduleTimeUtc), "Schedule date and time must be in the future");
+                return View(billPayPosted);
             }
 
-            var billPay = await _context.BillPay.FindAsync(billPayV.BillPayID);
+            var billPay = await _context.BillPay.FindAsync(billPayPosted.BillPayID);
 
+            // if bill is blocked reject request
+            if (billPay.State == State.blocked)
+                return NotFound();
 
-            billPay.ScheduleTimeUtc = billPayV.ScheduleTimeUtc;
+            billPay.ScheduleTimeUtc = billPayPosted.ScheduleTimeUtc;
             billPay.State = State.active;
 
             try
@@ -219,7 +244,7 @@ namespace WebBanking.Views
             if (customer == null || // customer is logged in
                 billPay == null || // bill exist
                 !OwnsBill((int)id, customer) || // and the customer owns it
-                billPay.State == State.active) // and the bill is not active
+                billPay.State != State.failed ) // and the bill is not active
                 
                 return NotFound();
 

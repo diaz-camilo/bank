@@ -44,12 +44,12 @@ namespace WebBanking.BackgroundServices
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<WebBankContext>();
 
-            // here you do the work that needs to be done
-
+            
+            // get all active bills
             var timeNow = DateTime.UtcNow.ToLocalTime();
             var BillPays = context.BillPay.
                 Where(bill => bill.ScheduleTimeUtc < timeNow).
-                Where(bill => bill.State != State.failed).
+                Where(bill => bill.State == State.active).
                 ToList();
             
             _logger.LogInformation($"Bills to process {BillPays.Count}");
@@ -102,9 +102,6 @@ namespace WebBanking.BackgroundServices
                 }
 
             }
-
-
-
             // here you do the work that needs to be done
 
             await context.SaveChangesAsync(stoppingToken);
