@@ -54,13 +54,6 @@ namespace WebBanking.Controllers
             return View(customer);
         }
 
-        
-
-        
-
-
-        
-
         //GET: Customer/Statements/5
         public async Task<IActionResult> Statements(int? id, int page = 1)
         {

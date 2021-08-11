@@ -19,6 +19,8 @@
     <None Remove="ViewModels\" />
     <None Remove="BackgroundServices\" />
     <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <None Remove="Views\Signup\" />
+    <None Remove="Repository\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.9" />
@@ -39,6 +41,8 @@
     <Folder Include="Views\Login\" />
     <Folder Include="ViewModels\" />
     <Folder Include="BackgroundServices\" />
+    <Folder Include="Views\Signup\" />
+    <Folder Include="Repository\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\utils\utils.csproj">

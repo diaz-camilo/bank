@@ -8,28 +8,28 @@
     <link rel="stylesheet" href="~/css/site.css" />
 
     @*<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">google.charts.load('current', { 'packages': ['corechart'] });
-        google.charts.setOnLoadCallback(drawChart);
+        <script type="text/javascript">google.charts.load('current', { 'packages': ['corechart'] });
+            google.charts.setOnLoadCallback(drawChart);
 
-        function drawChart() {
+            function drawChart() {
 
-            var data = google.visualization.arrayToDataTable([
-                ['Task', 'Hours per Day'],
-                ['Work', 11],
-                ['Eat', 2],
-                ['Commute', 2],
-                ['Watch TV', 2],
-                ['Sleep', 7]
-            ]);
+                var data = google.visualization.arrayToDataTable([
+                    ['Task', 'Hours per Day'],
+                    ['Work', 11],
+                    ['Eat', 2],
+                    ['Commute', 2],
+                    ['Watch TV', 2],
+                    ['Sleep', 7]
+                ]);
 
-            var options = {
-                title: 'My Daily Activities'
-            };
+                var options = {
+                    title: 'My Daily Activities'
+                };
 
-            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+                var chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
-            chart.draw(data, options);
-        }</script>*@
+                chart.draw(data, options);
+            }</script>*@
 
 
 </head>
@@ -64,32 +64,35 @@
                             <li>
                                 <a class="nav-link text-dark" asp-controller="Login" asp-action="Login">Login</a>
                             </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Signup" asp-action="NewCustomer">Sign Up</a>
+                            </li>
                         }
                     </ul>
                     @if (isLoggedIn)
                     {
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Accounts Summary</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Details" asp-route-id=@Context.Session.GetInt32(nameof(Customer.CustomerID))>My Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Transfer">Transfer</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            BillPay
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a asp-controller="BillPay" asp-action="Create" class="dropdown-item">New Bill</a>
-                            <a asp-controller="BillPay" asp-action="Index" class="dropdown-item">Active Bills</a>
-                            <a asp-controller="BillPay" asp-action="FailedBills" class="dropdown-item">Failed Bills</a>
-                            <a asp-controller="BillPay" asp-action="BlockedBills" class="dropdown-item">Blocked Bills</a>
-                        </div>
-                    </li>
-                </ul>
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Accounts Summary</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Details" asp-route-id=@Context.Session.GetInt32(nameof(Customer.CustomerID))>My Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Transfer">Transfer</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    BillPay
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a asp-controller="BillPay" asp-action="Create" class="dropdown-item">New Bill</a>
+                                    <a asp-controller="BillPay" asp-action="Index" class="dropdown-item">Active Bills</a>
+                                    <a asp-controller="BillPay" asp-action="FailedBills" class="dropdown-item">Failed Bills</a>
+                                    <a asp-controller="BillPay" asp-action="BlockedBills" class="dropdown-item">Blocked Bills</a>
+                                </div>
+                            </li>
+                        </ul>
                     }
                 </div>
             </div>
