@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebBanking.BackgroundServices;
 using WebBanking.Data;
+using WebBanking.Models;
+using WebBanking.Repository;
 
 namespace WebBanking
 {
@@ -37,8 +39,17 @@ namespace WebBanking
                 options.UseLazyLoadingProxies();
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<WebBankContext>();
+            services.AddIdentity<AppUser, AppRole>(options =>
+            {
+                options.User.AllowedUserNameCharacters = "1234567890";
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+
+            }
+            ).AddEntityFrameworkStores<WebBankContext>();
 
             // Enable Background Services
             services.AddHostedService<BillPayBackgroundService>();
@@ -90,6 +101,8 @@ namespace WebBanking
                 options.Cookie.IsEssential = true;
                 options.IdleTimeout = TimeSpan.FromDays(7);
             });
+
+            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -12,9 +12,11 @@ using SimpleHashing;
 using System.Text.RegularExpressions;
 using X.PagedList;
 using WebBanking.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebBanking.Controllers
 {
+    [Authorize]
     public class CustomerController : Controller
     {
         private readonly WebBankContext _context;

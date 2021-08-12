@@ -7,7 +7,7 @@ namespace WebBanking.Data
 {
 
     // Context is the database.
-    public class WebBankContext : IdentityDbContext
+    public class WebBankContext : IdentityDbContext<AppUser, AppRole, int>
     {
         public WebBankContext(DbContextOptions<WebBankContext> options) : base(options)
         { }

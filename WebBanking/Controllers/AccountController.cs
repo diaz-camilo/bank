@@ -9,11 +9,12 @@ using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
 using WebBanking.ViewModels;
-using Newtonsoft;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebBanking.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly WebBankContext _context;

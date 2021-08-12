@@ -8,6 +8,7 @@ namespace WebBanking.Models
     {
         [RegularExpression(@"^\d{8}$")]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
+
         public string LoginID { get; set; }
 
         [Required]

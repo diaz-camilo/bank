@@ -12,9 +12,11 @@ using X.PagedList;
 
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebBanking.Views
 {
+    [Authorize]
     public class BillPayController : Controller
     {
         private readonly WebBankContext _context;

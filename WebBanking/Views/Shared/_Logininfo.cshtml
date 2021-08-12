@@ -1,0 +1,56 @@
+﻿@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> _signinManager
+
+
+<ul class="navbar-nav">
+
+    @{
+        var isLoggedIn = Context.Session.GetInt32(nameof(Customer.CustomerID)).HasValue;
+    }
+
+    @*@if (isLoggedIn)*@
+    @if (_signinManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <span class="nav-link text-dark">
+                Welcome, @Context.Session.GetString(nameof(Customer.Name))
+            </span>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Signup" asp-action="Logout">Logout</a>
+        </li>
+    }
+    else
+    {
+        <li>
+            <a class="nav-link text-dark" asp-controller="Signup" asp-action="Login">Login</a>
+        </li>
+        <li>
+            <a class="nav-link text-dark" asp-controller="Signup" asp-action="NewCustomer">Sign Up</a>
+        </li>
+    }
+</ul>
+@if (isLoggedIn)
+{
+    <ul class="navbar-nav flex-grow-1">
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Accounts Summary</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Details" asp-route-id=@Context.Session.GetInt32(nameof(Customer.CustomerID))>My Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Transfer">Transfer</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                BillPay
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a asp-controller="BillPay" asp-action="Create" class="dropdown-item">New Bill</a>
+                <a asp-controller="BillPay" asp-action="Index" class="dropdown-item">Active Bills</a>
+                <a asp-controller="BillPay" asp-action="FailedBills" class="dropdown-item">Failed Bills</a>
+                <a asp-controller="BillPay" asp-action="BlockedBills" class="dropdown-item">Blocked Bills</a>
+            </div>
+        </li>
+    </ul>
+}

@@ -72,6 +72,7 @@ namespace WebBanking.Controllers
 
             var transactionsList = _context.Transaction.
                 Where(x => x.TransactionTimeUtc > DateTime.Now.AddDays(-14)).
+                Where(x => x.AccountNumber == accNumb).
                 AsEnumerable().
                 GroupBy(x => x.TransactionType,
                         x => x.TransactionType,
