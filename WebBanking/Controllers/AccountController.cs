@@ -11,31 +11,48 @@ using WebBanking.Models;
 using WebBanking.ViewModels;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebBanking.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Customer")]
     public class AccountController : Controller
     {
         private readonly WebBankContext _context;
 
-        public AccountController(WebBankContext context) => _context = context;
+
+        public AccountController(WebBankContext context)
+        {
+            _context = context;
+        }
+
+        [AllowAnonymous]
+        public IActionResult Login() => RedirectToAction("Login", "Signup");
+
+        // Get Customer ID from Claims
+        private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
 
         //GET: Customer/Deposit/5
         public async Task<IActionResult> Deposit(int? id)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
+            var customerID = GetCustomerID();
+
+            var customer = _context.Customer.Find(customerID);
+
+            var account = customer.Accounts.Find(x => x.AccountNumber == id);
+
             if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
                 return NotFound();
 
 
-            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
+            
 
 
             return View(new TransactionViewModel { AccountNumber = (int)id });
         }
+
+
+
 
         [HttpPost]
         //POST: Customer/Deposit/5

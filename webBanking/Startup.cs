@@ -31,6 +31,13 @@ namespace WebBanking
         {
             services.AddControllersWithViews();
 
+            services.ConfigureApplicationCookie(config =>
+            {
+                config.LoginPath = "/Login";
+            });
+
+
+
             // Add database connection string
             services.AddDbContext<WebBankContext>(options =>
             {
@@ -41,9 +48,9 @@ namespace WebBanking
 
             services.AddIdentity<AppUser, AppRole>(options =>
             {
-                options.User.AllowedUserNameCharacters = "1234567890";
+                options.User.AllowedUserNameCharacters = "1234567890admin";
                 options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
+                options.Password.RequiredLength = 4;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
@@ -103,6 +110,7 @@ namespace WebBanking
             });
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

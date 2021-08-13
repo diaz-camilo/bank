@@ -5,7 +5,7 @@ namespace WebBanking.Models
 {
     public class AppUser : IdentityUser<int>
     {
-        public int CustomerID { get; set; }
+        public int? CustomerID { get; set; }
         public virtual Customer Customer { get; set; }
     }
 }

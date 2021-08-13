@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +23,9 @@ namespace WebBanking.Controllers
             _context = context;
             _userRepository = userRepository;
         }
+
+        // Get Customer ID from Claims
+        private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
 
         public IActionResult NewCustomer()
         {
@@ -122,7 +127,7 @@ namespace WebBanking.Controllers
             {
                 var user = _context.Users.FirstOrDefault(x => x.UserName == login.LoginID);
 
-                HttpContext.Session.SetInt32(nameof(Customer.CustomerID), user.CustomerID);
+                HttpContext.Session.SetInt32(nameof(Customer.CustomerID), user.CustomerID.Value);
                 HttpContext.Session.SetString(nameof(Customer.Name), user.Customer.Name);
 
                 return RedirectToAction("Index", "Home");
@@ -139,6 +144,32 @@ namespace WebBanking.Controllers
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost, Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var id = HttpContext.User.Identity.Name;
+                //FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _userRepository.ChangePasswordAsync(model, id.ToString());
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", "Check your password and try again");
+                return View(model);
+            }
+
+            ViewBag.isSuccess = true;
+            return View();
         }
     }
 }

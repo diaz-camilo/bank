@@ -10,5 +10,6 @@ namespace WebBanking.Repository
         Task<IdentityResult> CreateUserAsync(SignupUser signupUser);
         Task<SignInResult> LoginUserAsync(LoginViewModel login);
         Task LogoutUserAsync();
+        Task<IdentityResult> ChangePasswordAsync(ChangePasswordViewModel model, string CustomerID);
     }
 }
