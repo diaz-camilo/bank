@@ -12,6 +12,7 @@ using WebBanking.ViewModels;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using WebBanking.Repository;
 
 namespace WebBanking.Controllers
 {
@@ -19,11 +20,12 @@ namespace WebBanking.Controllers
     public class AccountController : Controller
     {
         private readonly WebBankContext _context;
+        private readonly IUserRepository _userRepository;
 
-
-        public AccountController(WebBankContext context)
+        public AccountController(WebBankContext context, IUserRepository userRepository)
         {
             _context = context;
+            this._userRepository = userRepository;
         }
 
         [AllowAnonymous]
@@ -33,7 +35,7 @@ namespace WebBanking.Controllers
         private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
 
         //GET: Customer/Deposit/5
-        public async Task<IActionResult> Deposit(int? id)
+        public IActionResult Deposit(int? id)
         {
             var customerID = GetCustomerID();
 
@@ -41,12 +43,8 @@ namespace WebBanking.Controllers
 
             var account = customer.Accounts.Find(x => x.AccountNumber == id);
 
-            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
+            if (account == null)
                 return NotFound();
-
-
-            
-
 
             return View(new TransactionViewModel { AccountNumber = (int)id });
         }

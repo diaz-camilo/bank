@@ -7,7 +7,7 @@ namespace WebBanking.Models
 {
     public class SignupUser
     {
-        public int LoginID { get; set; }
+        public string LoginID { get; set; }
         public int CustomerID { get; set; }
         public int AccountNum { get; set; }
 

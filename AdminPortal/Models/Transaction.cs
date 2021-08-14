@@ -27,10 +27,12 @@ namespace AdminPortal.Models
         [ForeignKey("Account")]
         [Display(Name = "Account Number")]
         public int AccountNumber { get; set; }
+        public virtual Account Account { get; set; }
 
         [ForeignKey("DestinationAccount")]
         [Display(Name = "Destination Account")]
         public int? DestinationAccountNumber { get; set; }
+        public virtual Account DestinationAccount { get; set; }
 
         [Required]
         [DataType(DataType.Currency)]

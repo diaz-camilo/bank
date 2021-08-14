@@ -46,6 +46,7 @@ namespace WebBanking
                 options.UseLazyLoadingProxies();
             });
 
+            // Add Identity and configure
             services.AddIdentity<AppUser, AppRole>(options =>
             {
                 options.User.AllowedUserNameCharacters = "1234567890admin";
@@ -102,6 +103,7 @@ namespace WebBanking
                 options.SchemaName = "dotnet";
                 options.TableName = "SessionCache";
             });
+
             services.AddSession(options =>
             {
                 // Make the session cookie essential.
@@ -109,6 +111,7 @@ namespace WebBanking
                 options.IdleTimeout = TimeSpan.FromDays(7);
             });
 
+            // Add services
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         }
@@ -129,8 +132,7 @@ namespace WebBanking
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
-
-            // enables authentication
+                        
             app.UseSession();
 
             app.UseRouting();

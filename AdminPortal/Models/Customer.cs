@@ -12,7 +12,6 @@ namespace AdminPortal.Models
 
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [RegularExpression(@"^\d{4}$")]
-        [Display(Name ="Customer ID")]        
         public int CustomerID { get; set; }
 
         [Required]
@@ -33,7 +32,14 @@ namespace AdminPortal.Models
         [RegularExpression(@"^\d{4}$", ErrorMessage = "Postcode must be a 4 digit number, no spaces")]
         public string Postcode { get; set; }
 
-        [RegularExpression(@"^04\d{2}(?:\s\d{3}){2}$", ErrorMessage ="Australian mobile number in the format 0444 111 222")]
+        [RegularExpression(@"^04\d{2}(?:\s\d{3}){2}$", ErrorMessage = "Australian mobile number in the format 0444 111 222")]
         public string Mobile { get; set; }
+
+        public virtual List<Account> Accounts { get; set; }
+
+        public virtual Login Login { get; set; }
+
+
+        public virtual AppUser ID { get; set; }
     }
 }

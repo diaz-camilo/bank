@@ -35,6 +35,8 @@ namespace BankAPI
             options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext))));
 
             services.AddScoped<CustomerManager>();
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

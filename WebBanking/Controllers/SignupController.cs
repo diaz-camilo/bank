@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
+using WebBanking.Enums;
 using WebBanking.Models;
 using WebBanking.Repository;
 using WebBanking.ViewModels;
@@ -50,6 +51,7 @@ namespace WebBanking.Controllers
             var activeLoginIDs = await _context.Users.
                 Select(x => x.Id).ToListAsync();
 
+            // Generate unique CustomerID, AccountNumber and LoginID
             var newCustomerID = rand.Next(1000, 9999);
             var newAccountNum = rand.Next(1000, 9999);
             var newLoginID = rand.Next(10000000, 99999999);
@@ -64,7 +66,7 @@ namespace WebBanking.Controllers
 
             while (activeLoginIDs.Contains(newLoginID))
                 newLoginID = rand.Next(10000000, 99999999);
-            model.LoginID = newLoginID;
+            model.LoginID = newLoginID.ToString();
 
             // Create Customer
             _context.Customer.Add(new Customer
@@ -95,15 +97,18 @@ namespace WebBanking.Controllers
             await _context.SaveChangesAsync();
 
             // Add Logins
-            var result = await _userRepository.CreateUserAsync(model);
+            var resultCreateUser = await _userRepository.CreateUserAsync(model);
 
-            if (!result.Succeeded)
+            if (!resultCreateUser.Succeeded)
             {
-                foreach (var error in result.Errors)
+                foreach (var error in resultCreateUser.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+                return View(model);
             }
+
+            var resultAssignRole = await _userRepository.AssignRoleAsync(model.LoginID, RoleEnum.Customer);
 
             return View("SignupSuccess", model);
         }

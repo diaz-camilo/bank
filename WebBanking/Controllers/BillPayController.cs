@@ -13,6 +13,7 @@ using X.PagedList;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authorization;
+using WebBanking.Repository;
 
 namespace WebBanking.Views
 {
@@ -20,6 +21,7 @@ namespace WebBanking.Views
     public class BillPayController : Controller
     {
         private readonly WebBankContext _context;
+        private readonly IUserRepository _userRepository;
 
         private Customer GetActiveCustomer()
         {
@@ -29,7 +31,11 @@ namespace WebBanking.Views
             return customer;
         }
 
-        public BillPayController(WebBankContext context) => _context = context;
+        public BillPayController(WebBankContext context, IUserRepository userRepository)
+        {
+            _context = context;
+            _userRepository = userRepository;
+        }
 
         // GET: BillPay
         public async Task<IActionResult> Index(int page = 1)

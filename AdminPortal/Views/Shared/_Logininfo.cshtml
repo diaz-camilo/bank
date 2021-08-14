@@ -1,0 +1,41 @@
+﻿@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> _signinManager
+
+
+<ul class="navbar-nav">
+        
+    @if (_signinManager.IsSignedIn(User))
+    {        
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Logout">Logout</a>
+        </li>
+    }
+    else
+    {
+        <li>
+            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Login</a>
+        </li>        
+    }
+</ul>
+@if (_signinManager.IsSignedIn(User))
+{
+<ul class="navbar-nav flex-grow-1">
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Transactions
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="TransactionsByAccountNum">Transactions By Account</a>
+            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="TransactionsByAmount">Transactions By Amount</a>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="CustomerAccess">Lock/Unlock Customer</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="BillPayState">Block/Unblock BillPay</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UpdateCustomerDetails" asp-route-id="1">Change Customer Details</a>
+    </li>
+</ul>
+}

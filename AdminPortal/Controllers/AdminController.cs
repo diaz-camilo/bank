@@ -10,9 +10,11 @@ using Newtonsoft.Json;
 using System.Text;
 using AdminPortal.Models;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AdminPortal.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly IHttpClientFactory _clientFactory;

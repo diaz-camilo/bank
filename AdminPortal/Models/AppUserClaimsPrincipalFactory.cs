@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
-namespace WebBanking.Models
+namespace AdminPortal.Models
 {
     public class AppUserClaimsPrincipalFactory :
         UserClaimsPrincipalFactory<AppUser, AppRole>
@@ -22,11 +22,11 @@ namespace WebBanking.Models
         {
             var identity = await base.GenerateClaimsAsync(user);
 
-            if (user.CustomerID.HasValue)
-            {
-                identity.AddClaim(new Claim(nameof(Customer) + nameof(Customer.Name), user.Customer.Name ?? ""));
-                identity.AddClaim(new Claim(nameof(Customer.CustomerID), user.CustomerID.ToString() ?? "0"));
-            }
+            //if (user.CustomerID.HasValue)
+            //{
+            //    identity.AddClaim(new Claim(nameof(Customer) + nameof(Customer.Name), user.Customer.Name ?? ""));
+            //    identity.AddClaim(new Claim(nameof(Customer.CustomerID), user.CustomerID.ToString() ?? "0"));
+            //}
             
 
             return identity;

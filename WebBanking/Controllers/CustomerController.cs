@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using X.PagedList;
 using WebBanking.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using WebBanking.Repository;
 
 namespace WebBanking.Controllers
 {
@@ -20,10 +21,12 @@ namespace WebBanking.Controllers
     public class CustomerController : Controller
     {
         private readonly WebBankContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public CustomerController(WebBankContext context)
+        public CustomerController(WebBankContext context, IUserRepository userRepository)
         {
             _context = context;
+            _userRepository = userRepository;
         }
 
 

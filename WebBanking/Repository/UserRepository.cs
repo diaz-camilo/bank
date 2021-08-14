@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using WebBanking.Enums;
 using WebBanking.Models;
 using WebBanking.ViewModels;
 
@@ -25,18 +26,34 @@ namespace WebBanking.Repository
 
         public async Task<IdentityResult> CreateUserAsync(SignupUser signupUser)
         {
-            var result2 = await _userManager.CreateAsync(new AppUser { UserName = "admin", CustomerID = null }, "admin");
-
             var user = new AppUser()
             {
-                UserName = signupUser.LoginID.ToString(),
+                UserName = signupUser.LoginID,
                 CustomerID = signupUser.CustomerID,
             };
 
             var result = await _userManager.CreateAsync(user, signupUser.password);
-            await _userManager.AddToRoleAsync(user, "Customer");
+            await _userManager.AddToRoleAsync(user, RoleEnum.Customer.ToString());
 
             return result;
+        }
+
+        public async Task<IdentityResult> AssignRoleAsync(string userName, RoleEnum role)
+        {
+            var result = await _userManager.AddToRoleAsync(new AppUser { UserName = userName }, role.ToString());
+
+            return result;
+        }
+
+        public async Task CreateRolesAsync()
+        {
+            var rolesArray = Enum.GetNames<RoleEnum>();
+
+            for (int i = 0; i < rolesArray.Length; i ++)
+            {
+               await _roleManager.CreateAsync(new AppRole { Name = rolesArray[i], NormalizedName = rolesArray[i], ConcurrencyStamp = rolesArray[i] });
+            }
+            
         }
 
         public async Task<SignInResult> LoginUserAsync(LoginViewModel login)
