@@ -62,6 +62,8 @@ namespace WebBanking.BackgroundServices
                 if (availableBalance < bill.Amount)
                 {
                     bill.State = State.failed;
+
+                    // Adds a transaction with $0 amount to the statements to keep a record of when the transaction failed for future references.
                     bill.Account.Transactions.Add(
                     new Transaction
                     {
