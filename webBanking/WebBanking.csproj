@@ -13,7 +13,6 @@
     <None Remove="Microsoft.EntityFrameworkCore.Sqlite" />
     <None Remove="Microsoft.EntityFrameworkCore.Proxies" />
     <None Remove="SimpleHashing" />
-    <None Remove="Views\Login\" />
     <None Remove="Microsoft.Extensions.Caching.SqlServer" />
     <None Remove="X.PagedList.Mvc.Core" />
     <None Remove="ViewModels\" />
@@ -38,7 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
-    <Folder Include="Views\Login\" />
     <Folder Include="ViewModels\" />
     <Folder Include="BackgroundServices\" />
     <Folder Include="Views\Signup\" />

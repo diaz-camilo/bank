@@ -3,4 +3,7 @@
 @using WebBanking.ViewModels
 @using Microsoft.AspNetCore.Http
 @using utils.Enums
+
+@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> _signinManager
+
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

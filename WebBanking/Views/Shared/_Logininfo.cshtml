@@ -1,18 +1,12 @@
-﻿@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> _signinManager
-
+﻿
 
 <ul class="navbar-nav">
 
-    @{
-        var isLoggedIn = Context.Session.GetInt32(nameof(Customer.CustomerID)).HasValue;
-    }    
-
-    @*@if (isLoggedIn)*@
     @if (_signinManager.IsSignedIn(User))
     {
         <li class="nav-item">
             <span class="nav-link text-dark">
-                Welcome, @User.FindFirst(nameof(Customer) + nameof(Customer.Name)).Value, CustomerID: @User.FindFirst(nameof(Customer.CustomerID)).Value 
+                Welcome, @User.FindFirst(nameof(Customer) + nameof(Customer.Name)).Value
             </span>
         </li>
         <li class="nav-item">

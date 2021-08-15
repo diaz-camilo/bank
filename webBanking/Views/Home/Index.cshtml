@@ -5,17 +5,13 @@
 <div class="text-center">
     <h1 class="display-4">Welcome To MCBA Bank</h1>
 
-    @{
-        var isLoggedIn = Context.Session.GetInt32(nameof(Customer.CustomerID)).HasValue;
-    }
-    @if (isLoggedIn)
+    @if (_signinManager.IsSignedIn(User))
     {
         <h3>Dashboard</h3>
 
         <div class="container">
             <div class="row">
                 <div class="col" id="ColumnChart" style="width: 100%; height: 800px;"></div>
-                <!--<div class="col">-->@* Add form to control chart *@<!--</div>-->
             </div>
             <div class="row">
                 <div class="col" id="piechart" style="width: 900px; height: 500px;"></div>
@@ -25,10 +21,33 @@
 
 
     }
+    else
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h3>The Most Common Bank of Australia</h3>
+                    <p>Trust us,<br />
+                    Everyone else does.</p>
+                    <hr />
+                    <h3>Our Promise:</h3>
+                    <p>We will pay you no interest and charge you a transactions fee on withdraws and transfers</p>
+                    <hr />
+                    <h3>What Are You Waiting For?</h3>
+                    <p><a asp-action="NewCustomer" asp-controller="Signup">Sign Up</a> Today<br />
+                    Already a member? <a asp-controller="Signup" asp-action="Login">Log In</a></p>                    
+                </div>
+                <div class="col-md-8">
+                    <img src="~/bank.jpeg" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+
+    }
 </div>
 
 
-@if (isLoggedIn)
+@if (_signinManager.IsSignedIn(User))
 {
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">google.charts.load('current', { 'packages': ['corechart'] });

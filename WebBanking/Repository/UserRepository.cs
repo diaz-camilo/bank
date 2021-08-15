@@ -86,7 +86,8 @@ namespace WebBanking.Repository
         public async Task<SignInResult> LoginUserAsync(LoginViewModel login)
         {
             var a = _userManager.FindByNameAsync(login.LoginID).Result;
-            if (a.IsLocked)
+
+            if (a == null || a.IsLocked)
                 return null;
 
             var result = await _signInManager.PasswordSignInAsync(login.LoginID, login.Password, true, false);
