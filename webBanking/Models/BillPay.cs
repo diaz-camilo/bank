@@ -13,13 +13,14 @@ namespace WebBanking.Models
     public class BillPay
     {
 
-
+        [Required]
         public int BillPayID { get; set; }
 
         [Required]
         [RegularExpression(@"\d{4}", ErrorMessage = "Account number must be a 4 digit number")]
         [DisplayName("Account to Debit")]
 
+      
         [ForeignKey("Account")]
         public int AccountNumber { get; set; }
         public virtual Account Account { get; set; }
@@ -46,6 +47,7 @@ namespace WebBanking.Models
         [DisplayName("Frequency")]
         public Period Period { get; set; }
 
+        [Required]
         public State State { get; set; }
     }
 }

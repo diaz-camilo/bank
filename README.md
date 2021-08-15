@@ -24,4 +24,6 @@ I Have intentionally set up the background service to record fail transactions i
 
 Please refere to BillPayBackgroundService.cs line 66
 
+Also, I have seeded transactions up until the 15th of september to allow for the marker to be able to apreciate the charts witha good amount of data.
+
 ## Camilo Diaz - s3820251

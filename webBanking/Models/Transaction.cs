@@ -33,7 +33,7 @@ namespace WebBanking.Models
         [RegularExpression(RegexPatterns.PositiveNumberTwoDecimal)]
         public decimal Amount { get; set; }
 
-        [StringLength(255)]
+        [StringLength(30)]
         public string Comment { get; set; }
 
         [Required]

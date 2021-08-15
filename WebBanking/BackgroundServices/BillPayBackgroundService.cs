@@ -32,7 +32,14 @@ namespace WebBanking.BackgroundServices
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await ProcessBillPays(stoppingToken);
+                try
+                {
+                    await ProcessBillPays(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+
+                }
 
                 _logger.LogInformation($"Next payments will run at {DateTime.UtcNow.AddMinutes(1).ToLocalTime().ToShortTimeString()}");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);

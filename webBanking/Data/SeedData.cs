@@ -331,28 +331,7 @@ namespace WebBanking.Data
 
             context.SaveChanges();
         }
-
-        public static void TestService(IServiceProvider serviceProvider)
-        {
-            var context = serviceProvider.GetRequiredService<WebBankContext>();
-            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-
-            //context.Customer.Add(new Customer { CustomerID = 1113, Name = "bob" });
-            //context.SaveChanges();
-
-            var result = userRepository.CreateAdminAsync(new SignupUser
-            {
-                //CustomerID = null,
-                LoginID = "admin5",
-                password = "admin5"
-            }).Result;
-
-            //var result2 = userRepository.AssignRoleAsync("admin4", RoleEnum.Admin).Result;
-
-            var i = 0;
-
-        }
-
+        
         public static void Initialize(IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<WebBankContext>();
