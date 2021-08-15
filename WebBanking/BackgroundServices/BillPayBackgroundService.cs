@@ -75,7 +75,7 @@ namespace WebBanking.BackgroundServices
                     new Transaction
                     {
                         Amount = 0,
-                        Comment = $"Your scheduled payment for {bill.Payee.Name} failed (Insuficient Funds)",
+                        Comment = $"Bill - {bill.Payee.Name} failed",
                         TransactionTimeUtc = DateTime.UtcNow,
                         TransactionType = TransactionType.BillPay
                     });
@@ -87,7 +87,7 @@ namespace WebBanking.BackgroundServices
                         new Transaction
                         {
                             Amount = bill.Amount,
-                            Comment = $"Your scheduled payment for {bill.Payee.Name} has been processed",
+                            Comment = $"Bill - {bill.Payee.Name} paid",
                             TransactionTimeUtc = DateTime.UtcNow,
                             TransactionType = TransactionType.BillPay
                         });
