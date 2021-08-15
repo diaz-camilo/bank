@@ -9,7 +9,6 @@ using WebBanking.Data;
 using WebBanking.Models;
 using WebBanking.ViewModels;
 using X.PagedList;
-
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authorization;
@@ -18,20 +17,19 @@ using utils.Enums;
 
 namespace WebBanking.Views
 {
-    [Authorize]
+    [Authorize(Roles = nameof(RoleEnum.Customer))]
+
     public class BillPayController : Controller
     {
         private readonly WebBankContext _context;
         private readonly IUserRepository _userRepository;
 
-        private Customer GetActiveCustomer()
-        {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = _context.Customer.Include(x => x.Accounts).ThenInclude(x => x.BillPays)
-                .FirstOrDefault(m => m.CustomerID == customerID);
-            return customer;
-        }
+        // Get Customer ID from Claims
+        private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
 
+        // Get Customer Object from DB
+        private async Task<Customer> getActiveCustomerAsync() => await _context.Customer.FindAsync(GetCustomerID());
+                
         public BillPayController(WebBankContext context, IUserRepository userRepository)
         {
             _context = context;
@@ -41,10 +39,7 @@ namespace WebBanking.Views
         // GET: BillPay
         public async Task<IActionResult> Index(int page = 1)
         {
-            // Validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             // Get active customer accounts
             var accounts = _context.Account.
@@ -61,13 +56,12 @@ namespace WebBanking.Views
             return View(await billPays.ToPagedListAsync(page, 6));
         }
 
-        public async Task<IActionResult> FailedBills(int page = 1)
-        {
-            // Validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
+        
 
+        public async Task<IActionResult> FailedBills(int page = 1)
+        {            
+            var customer = await getActiveCustomerAsync();
+            
             // Get active customer accounts
             var accounts = _context.Account.
                 Where(x => x.CustomerID == customer.CustomerID).
@@ -84,11 +78,8 @@ namespace WebBanking.Views
         }
 
         public async Task<IActionResult> BlockedBills(int page = 1)
-        {
-            // Validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
+        {            
+            var customer = await getActiveCustomerAsync();
 
             // Get active customer accounts
             var accounts = _context.Account.
@@ -109,12 +100,9 @@ namespace WebBanking.Views
 
 
         // GET: BillPay/Create
-        public IActionResult Create()
+        public async Task<IActionResult> CreateAsync()
         {
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
-
+            var customer = await getActiveCustomerAsync();
 
             var model = new BillPayViewModel()
             {
@@ -134,11 +122,8 @@ namespace WebBanking.Views
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AccountNumberSelected,PayeeIDSelected,Amount,ScheduleTimeUtc,PeriodSelected")] BillPayViewModel billPayViewModel)
         {
+            var customer = await getActiveCustomerAsync();
 
-            // validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
             // Check that date is in the future
             if (billPayViewModel.ScheduleTimeUtc < DateTime.UtcNow.ToLocalTime())
                 ModelState.AddModelError(nameof(billPayViewModel.ScheduleTimeUtc), "Schedule date and time must be in the future");
@@ -168,16 +153,13 @@ namespace WebBanking.Views
 
         // GET: BillPay/Reschedule/5
         public async Task<IActionResult> Reschedule(int? id)
-        {
-            // validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
-
+        {            
+            var customer = await getActiveCustomerAsync();
+            
             if (id == null)
                 return NotFound();
 
-            if (!OwnsBill((int)id, customer))
+            if (!OwnsBill(id.Value, customer))
                 return NotFound();
 
             var billPay = await _context.BillPay.FindAsync(id);
@@ -198,7 +180,7 @@ namespace WebBanking.Views
         public async Task<IActionResult> Reschedule([Bind("BillPayID,ScheduleTimeUtc")] BillPay billPayPosted)
         {
             var billPayID = HttpContext.Session.GetInt32("RescheduleBillID");
-            var customer = GetActiveCustomer();
+            var customer = await getActiveCustomerAsync();
 
             if (customer == null ||
                 billPayID == null ||
@@ -247,7 +229,7 @@ namespace WebBanking.Views
 
         public async Task<IActionResult> TryAgain(int? id)
         {
-            var customer = GetActiveCustomer();
+            var customer = await getActiveCustomerAsync();
             var billPay = _context.BillPay.Find(id);
 
             if (customer == null || // customer is logged in
@@ -268,9 +250,7 @@ namespace WebBanking.Views
         public async Task<IActionResult> Edit(int? id)
         {
             // validate customer
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             if (id == null)
                 return NotFound();
@@ -304,7 +284,7 @@ namespace WebBanking.Views
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BillPayID,AccountNumberSelected,PayeeIDSelected,Amount,ScheduleTimeUtc,PeriodSelected")] BillPayViewModel billPayViewModel)
         {
-            var customer = GetActiveCustomer();
+            var customer = await getActiveCustomerAsync();
             if (customer == null || id != billPayViewModel.BillPayID)
                 return NotFound();
 
@@ -348,7 +328,7 @@ namespace WebBanking.Views
         // GET: BillPay/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var customer = GetActiveCustomer();
+            var customer = await getActiveCustomerAsync();
 
             if (customer == null || id == null)
                 return NotFound();
@@ -369,9 +349,7 @@ namespace WebBanking.Views
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var customer = GetActiveCustomer();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             if (!OwnsBill(id, customer))
                 return NotFound();

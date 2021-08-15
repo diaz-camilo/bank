@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,12 +19,26 @@ using WebBanking.ViewModels;
 namespace WebBanking.Controllers
 {
 
-
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly WebBankContext _context;
         private readonly IUserRepository _userRepository;
+
+        // Try to get Customer ID from Claims,
+        // extra validation required as this controller AllowAnonymous anonimus
+        private int? GetCustomerID()
+        {
+            try
+            {
+                return Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
 
         public HomeController(ILogger<HomeController> logger, WebBankContext context, IUserRepository userRepository)
         {
@@ -35,7 +50,8 @@ namespace WebBanking.Controllers
         public IActionResult Index(int id = 0)
         {
 
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
+            var customerID = GetCustomerID();
+
             if (customerID == null)
                 return View();
 

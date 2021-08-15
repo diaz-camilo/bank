@@ -25,8 +25,17 @@ namespace WebBanking.Controllers
             _userRepository = userRepository;
         }
 
-        // Get Customer ID from Claims
-        private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
+        private int? GetCustomerID()
+        {
+            try
+            {
+                return Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
 
         public IActionResult NewCustomer()
         {
@@ -36,6 +45,13 @@ namespace WebBanking.Controllers
         [HttpPost]
         public async Task<IActionResult> NewCustomer(SignupUser model)
         {
+            // validate initial deposit
+            if ((model.AccountType == AccountType.Checking && model.InicialDeposit < 500) ||
+                (model.AccountType == AccountType.Savings && model.InicialDeposit < 100))
+                ModelState.AddModelError(nameof(model.InicialDeposit),
+                    "The minimum balance to open a savings account is $100 and " +
+                    "$500 for a checking account.");
+
             if (!ModelState.IsValid)
                 return View();
 
@@ -107,9 +123,6 @@ namespace WebBanking.Controllers
                 }
                 return View(model);
             }
-
-            var resultAssignRole = await _userRepository.AssignRoleAsync(model.LoginID, RoleEnum.Customer);
-
             return View("SignupSuccess", model);
         }
 
@@ -150,6 +163,7 @@ namespace WebBanking.Controllers
             return View(login);
         }
 
+        [Authorize(Roles =nameof(RoleEnum.Customer))]
         public async Task<IActionResult> Logout()
         {
             await _userRepository.LogoutUserAsync();
@@ -158,19 +172,19 @@ namespace WebBanking.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize(Roles = nameof(RoleEnum.Customer))]
         public IActionResult ChangePassword()
         {
             return View();
         }
 
-        [HttpPost, Authorize]
+        [HttpPost, Authorize(Roles = nameof(RoleEnum.Customer))]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
             var id = HttpContext.User.Identity.Name;
-                //FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _userRepository.ChangePasswordAsync(model, id.ToString());
 

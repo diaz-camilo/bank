@@ -50,8 +50,7 @@
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
-                <a asp-action="ChangePassword" asp-route-id=@Model.CustomerID class="btn btn-primary">Change Password</a>
-                <a asp-controller="Signup" asp-action="ChangePassword" asp-route-id=@Model.CustomerID class="btn btn-primary">Change Password with signup</a>
+                <a asp-controller="Signup" asp-action="ChangePassword" asp-route-id=@Model.CustomerID class="btn btn-primary">Change Password</a>
             </div>
         </form>
     </div>
@@ -61,6 +60,6 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
-@section Scripts {
+@*@section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+}*@

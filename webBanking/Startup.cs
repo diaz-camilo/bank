@@ -36,8 +36,6 @@ namespace WebBanking
                 config.LoginPath = "/Login";
             });
 
-
-
             // Add database connection string
             services.AddDbContext<WebBankContext>(options =>
             {
@@ -97,6 +95,7 @@ namespace WebBanking
              * dotnet sql-cache create "<connection string>" <schema name> <table name>
              * dotnet sql-cache create "Server=rmit.australiaeast.cloudapp.azure.com;Uid=s3820251_a2;Pwd=abc123;" dotnet SessionCache
              */
+
             services.AddDistributedSqlServerCache(options =>
             {
                 options.ConnectionString = Configuration.GetConnectionString(nameof(WebBankContext));
@@ -111,8 +110,10 @@ namespace WebBanking
                 options.IdleTimeout = TimeSpan.FromDays(7);
             });
 
-            // Add services
+            // Custome Identity repository
             services.AddScoped<IUserRepository, UserRepository>();
+
+            // Custome Claims factory
             services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         }
 
