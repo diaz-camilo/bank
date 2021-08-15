@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using utils.Enums;
 using WebBanking.Data;
 using WebBanking.Models;
 
@@ -27,7 +28,7 @@ namespace WebBanking.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            ;
+            
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -102,7 +103,7 @@ namespace WebBanking.BackgroundServices
                 }
 
             }
-            // here you do the work that needs to be done
+            
 
             await context.SaveChangesAsync(stoppingToken);
 

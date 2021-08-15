@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using WebBanking.Enums;
+using utils.Enums;
 using WebBanking.Models;
 using WebBanking.Repository;
 
@@ -155,47 +155,42 @@ namespace WebBanking.Data
             context.SaveChanges();
         }
 
-        public static async Task CreateUserLoginAsync(IUserRepository userRepository)
+        public static void CreateUserLogin(IUserRepository userRepository)
         {
-            await userRepository.CreateUserAsync(new SignupUser
+            userRepository.CreateUserAsync(new SignupUser
             {
                 Name = "Matthew Bolger",
                 LoginID = "12345678",
                 CustomerID = 2100,
                 password = "abc123"
-            });
-            
+            }).Wait();
 
-            await userRepository.CreateUserAsync(new SignupUser
+
+            userRepository.CreateUserAsync(new SignupUser
             {
                 Name = "Rodney Cocker",
                 LoginID = "38074569",
                 CustomerID = 2200,
                 password = "ilovermit2020"
-            });
-            
+            }).Wait();
 
-            await userRepository.CreateUserAsync(new SignupUser
+
+            userRepository.CreateUserAsync(new SignupUser
             {
                 Name = "Shekhar Kalra",
                 LoginID = "17963428",
                 CustomerID = 2300,
                 password = "youWill_n0tGuess-This!"
-            });
-            
+            }).Wait();
+
 
             // Admin
-            await userRepository.CreateUserAsync(new SignupUser
+            userRepository.CreateAdminAsync(new SignupUser
             {
                 Name = "admin",
                 LoginID = "admin",
                 password = "admin"
-            });
-
-            //await userRepository.AssignRoleAsync("12345678", RoleEnum.Customer);
-            //await userRepository.AssignRoleAsync("38074569", RoleEnum.Customer);
-            //await userRepository.AssignRoleAsync("17963428", RoleEnum.Customer);
-            //await userRepository.AssignRoleAsync("admin", RoleEnum.Admin);
+            }).Wait();
         }
 
         public static void AddTransactions(WebBankContext context)
@@ -336,5 +331,55 @@ namespace WebBanking.Data
 
             context.SaveChanges();
         }
+
+        public static void TestService(IServiceProvider serviceProvider)
+        {
+            var context = serviceProvider.GetRequiredService<WebBankContext>();
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
+            //context.Customer.Add(new Customer { CustomerID = 1113, Name = "bob" });
+            //context.SaveChanges();
+
+            var result = userRepository.CreateAdminAsync(new SignupUser
+            {
+                //CustomerID = null,
+                LoginID = "admin5",
+                password = "admin5"
+            }).Result;
+
+            //var result2 = userRepository.AssignRoleAsync("admin4", RoleEnum.Admin).Result;
+
+            var i = 0;
+
+        }
+
+        public static void Initialize(IServiceProvider serviceProvider)
+        {
+            var context = serviceProvider.GetRequiredService<WebBankContext>();
+
+            var any = context.Customer.Any();
+
+            // Look for customers.
+            if (any)
+                return; // DB has already been seeded.
+
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
+            userRepository.CreateRolesAsync().Wait();
+            CreateCustomers(context);
+            CreateAccounts(context);
+            AddInitialTransactions(context);
+            CreatePayees(context);
+            AddTransactions(context);
+
+            CreateUserLogin(userRepository);
+
+
+
+
+            context.SaveChanges();
+
+        }
+
     }
 }

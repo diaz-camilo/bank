@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using WebBanking.Enums;
+using utils.Enums;
 using WebBanking.Models;
 using WebBanking.ViewModels;
 
@@ -26,34 +26,61 @@ namespace WebBanking.Repository
 
         public async Task<IdentityResult> CreateUserAsync(SignupUser signupUser)
         {
-            var user = new AppUser()
+            AppUser user;
+
+            user = new AppUser()
             {
                 UserName = signupUser.LoginID,
                 CustomerID = signupUser.CustomerID,
             };
 
+
+
             var result = await _userManager.CreateAsync(user, signupUser.password);
-            await _userManager.AddToRoleAsync(user, RoleEnum.Customer.ToString());
+
+            var result2 = await AssignRoleAsync(user.UserName, RoleEnum.Customer);
+
+            return result;
+        }
+
+        public async Task<IdentityResult> CreateAdminAsync(SignupUser signupUser)
+        {
+            AppUser admin;
+
+            admin = new AppUser()
+            {
+                UserName = signupUser.LoginID,
+                CustomerID = null,
+            };
+
+
+
+            var result = await _userManager.CreateAsync(admin, signupUser.password);
+            await AssignRoleAsync(admin.UserName, RoleEnum.Admin);
 
             return result;
         }
 
         public async Task<IdentityResult> AssignRoleAsync(string userName, RoleEnum role)
         {
-            var result = await _userManager.AddToRoleAsync(new AppUser { UserName = userName }, role.ToString());
+            var user = await _userManager.FindByNameAsync(userName);
+
+            var result = await _userManager.AddToRoleAsync(user, role.ToString());
 
             return result;
         }
+
+
 
         public async Task CreateRolesAsync()
         {
             var rolesArray = Enum.GetNames<RoleEnum>();
 
-            for (int i = 0; i < rolesArray.Length; i ++)
+            for (int i = 0; i < rolesArray.Length; i++)
             {
-               await _roleManager.CreateAsync(new AppRole { Name = rolesArray[i], NormalizedName = rolesArray[i], ConcurrencyStamp = rolesArray[i] });
+                await _roleManager.CreateAsync(new AppRole { Name = rolesArray[i], NormalizedName = rolesArray[i], ConcurrencyStamp = rolesArray[i] });
             }
-            
+
         }
 
         public async Task<SignInResult> LoginUserAsync(LoginViewModel login)

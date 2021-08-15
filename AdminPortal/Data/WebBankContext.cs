@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AdminPortal.Data
 {
 
-    // Context for authentication and authorization use only
+    // Context for authentication and authorization purposes only use only
     public class WebBankContext : IdentityDbContext<AppUser, AppRole, int>
     {
         public WebBankContext(DbContextOptions<WebBankContext> options) : base(options)

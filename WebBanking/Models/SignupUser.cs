@@ -2,13 +2,14 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using utils;
+using utils.Enums;
 
 namespace WebBanking.Models
 {
     public class SignupUser
     {
         public string LoginID { get; set; }
-        public int CustomerID { get; set; }
+        public int? CustomerID { get; set; }
         public int AccountNum { get; set; }
 
         [Required(ErrorMessage ="Please enter your full name")]

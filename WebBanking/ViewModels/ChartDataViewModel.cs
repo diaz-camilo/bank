@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using utils.Enums;
 using WebBanking.Models;
 
 namespace WebBanking.ViewModels

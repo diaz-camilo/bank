@@ -19,20 +19,24 @@ namespace AdminPortal.Controllers
         public HomeController(ILogger<HomeController> logger, IUserRepository userRepository)
         {
             _logger = logger;
-            this._userRepository = userRepository;
+            _userRepository = userRepository;
         }
 
+        // loads login page
         public IActionResult Index()
         {
             return View();
         }
 
+
+        // Logout current user
         public async Task<IActionResult> LogoutAsync()
         {
             await _userRepository.LogoutUserAsync();
             return RedirectToAction("Index");
         }
 
+        // Attempts to login user
         [HttpPost]
         public async Task<IActionResult> IndexAsync(LoginViewModel login)
         {

@@ -9,6 +9,7 @@ using System.Xml.Schema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using utils.Enums;
 using WebBanking.Data;
 using WebBanking.Models;
 using WebBanking.Repository;
@@ -31,31 +32,8 @@ namespace WebBanking.Controllers
             _userRepository = userRepository;
         }
 
-        public async Task<IActionResult> IndexAsync(int id = 0)
+        public IActionResult Index(int id = 0)
         {
-            var any = _context.Customer.Any();
-
-
-            
-
-            // if DB is empty, seed it.
-            if (!any)
-            {
-                _context.ConfigureAwait(true);
-               
-                SeedData.CreateCustomers(_context);
-                SeedData.CreateAccounts(_context);
-                SeedData.CreatePayees(_context);
-                SeedData.AddInitialTransactions(_context);
-                await _userRepository.CreateRolesAsync();
-                await SeedData.CreateUserLoginAsync(_userRepository);
-                SeedData.AddTransactions(_context);
-            }
-
-
-
-
-
 
             var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
             if (customerID == null)

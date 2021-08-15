@@ -1,5 +1,4 @@
-﻿using System;
-namespace WebBanking.Enums
+﻿namespace utils.Enums
 {
     public enum RoleEnum
     {

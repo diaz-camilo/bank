@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using WebBanking.Enums;
+using utils.Enums;
 using WebBanking.Models;
 using WebBanking.ViewModels;
 
@@ -14,5 +14,6 @@ namespace WebBanking.Repository
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordViewModel model, string CustomerID);
         Task<IdentityResult> AssignRoleAsync(string userName, RoleEnum role);
         Task CreateRolesAsync();
+        Task<IdentityResult> CreateAdminAsync(SignupUser signupUser);
     }
 }

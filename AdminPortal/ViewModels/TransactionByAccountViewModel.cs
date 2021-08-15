@@ -7,11 +7,9 @@ namespace AdminPortal.ViewModels
 {
     public class TransactionByAccountViewModel
     {
-        //[RegularExpression(@"^\d{4}-\d{2}-\d{2}", ErrorMessage = "enter date in the format yyyy-mm-dd ")]
         [Display(Name = "Start Date")]
         public string StartDate { get; set; }
 
-        //[RegularExpression(@"^\d{4}-\d{2}-\d{2}", ErrorMessage = "enter date in the format yyyy-mm-dd ")]
         [Display(Name = "End Date")]
         public string EndDate { get; set; }
 

@@ -18,7 +18,12 @@ namespace AdminPortal.ViewModels
         [Display(Name ="Login State")]
         public bool LoginState { get; set; }
 
-        public List<SelectListItem> LoginStates { get; } = new List<SelectListItem>() { new SelectListItem("Block User", "true"), new SelectListItem("Unblock User", "false") };
+        public List<SelectListItem> LoginStates { get; } =
+            new List<SelectListItem>
+            {
+                new SelectListItem("Block User", "true"),
+                new SelectListItem("Unblock User", "false")
+            };
 
         public string Response { get; set; }
 

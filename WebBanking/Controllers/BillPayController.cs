@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authorization;
 using WebBanking.Repository;
+using utils.Enums;
 
 namespace WebBanking.Views
 {

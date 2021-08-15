@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using AdminPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Text;
 using AdminPortal.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
@@ -44,6 +43,9 @@ namespace AdminPortal.Controllers
             return View(new TransactionByAccountViewModel());
         }
 
+        // Get all the transactios for a given account number.
+        // if a start date and end date are provided, transaction will be within those dates,
+        // otherwise, it will retrive all transactions.
         [HttpPost]
         public async Task<IActionResult> TransactionsByAccountNum(TransactionByAccountViewModel transactionByAccountViewModel)
         {
@@ -96,9 +98,11 @@ namespace AdminPortal.Controllers
             return View(new TransactionByAmountViewModel());
         }
 
+        // get all the transactions from all the accounts in the system that are within the minimum and maximum amounts provided
         [HttpPost]
         public async Task<IActionResult> TransactionsByAmount(TransactionByAmountViewModel transactionByAmountViewModel)
         {
+            
             if (transactionByAmountViewModel.MaxAmount <= transactionByAmountViewModel.MinAmount)
                 ModelState.AddModelError(nameof(transactionByAmountViewModel.MaxAmount), "Max Amount must be greater than Min Amount");
 
@@ -131,6 +135,7 @@ namespace AdminPortal.Controllers
             return View(new CustomerAccessViewModel());
         }
 
+        // lock or unlock a user from the banking system with a given Customer ID
         [HttpPost]
         public async Task<IActionResult> CustomerAccess(CustomerAccessViewModel customerAccessViewModel)
         {
@@ -153,6 +158,7 @@ namespace AdminPortal.Controllers
             return View(new BillPayStateViewModel());
         }
 
+        // block or unblock a bill given a billPay ID
         [HttpPost]
         public async Task<IActionResult> BillPayState(BillPayStateViewModel billPayStateViewModel)
         {
@@ -170,6 +176,7 @@ namespace AdminPortal.Controllers
 
         }
 
+        // provides a for to update a customer's details
         [HttpGet]
         public async Task<IActionResult> UpdateCustomerDetails(int? id, [Bind(nameof(Customer.CustomerID))] Customer customer)
         {
@@ -205,6 +212,7 @@ namespace AdminPortal.Controllers
             return View(customer);
         }
 
+        // Validates model and sends request to API to update customer's details
         [HttpPost]
         public async Task<IActionResult> UpdateCustomerDetails(Customer customer)
         {
@@ -212,7 +220,7 @@ namespace AdminPortal.Controllers
             if (!ModelState.IsValid)
                 return View("UpdateCustomerDetailsError", customer);
 
-            var response = await Client.PutAsync($"/BankAPI/Admin/UpdateCustomerDetails/{customer.CustomerID}", JsonContent.Create(customer));
+            var response = await Client.PutAsync($"/BankAPI/Admin/UpdateCustomerDetails", JsonContent.Create(customer));
 
             if (!response.IsSuccessStatusCode)
                 ModelState.AddModelError(nameof(customer.CustomerID), "Error while trying to update customer details");
