@@ -7,5 +7,6 @@ namespace WebBanking.Models
     {
         public int? CustomerID { get; set; }
         public virtual Customer Customer { get; set; }
+        public bool IsLocked { get; set; }
     }
 }

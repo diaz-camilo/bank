@@ -45,7 +45,7 @@ namespace AdminPortal.Controllers
 
             if (result.Succeeded)
             {
-                return View();
+                return RedirectToAction("Index","Admin");
             }
 
             ModelState.AddModelError(nameof(login.LoginID), "Invalid Credentials");

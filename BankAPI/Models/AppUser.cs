@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 
-namespace AdminPortal.Models
+namespace BankAPI.Models
 {
     public class AppUser : IdentityUser<int>
     {

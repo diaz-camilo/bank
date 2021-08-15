@@ -31,8 +31,12 @@ namespace BankAPI
 
             services.AddControllers();
 
-            services.AddDbContext<WebBankContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext))));
+            services.AddDbContext<WebBankContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext)));
+                options.UseLazyLoadingProxies();
+            });
+            
+            
 
             services.AddScoped<CustomerManager>();
 

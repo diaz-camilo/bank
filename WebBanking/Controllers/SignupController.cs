@@ -128,6 +128,13 @@ namespace WebBanking.Controllers
 
             var result = await _userRepository.LoginUserAsync(login);
 
+            if (result == null)
+            {
+                ModelState.AddModelError(nameof(login.LoginID), $"User {login.LoginID} is locked out, please contact the Admin");
+
+                return View(login);
+            }
+
             if (result.Succeeded)
             {
                 var user = _context.Users.FirstOrDefault(x => x.UserName == login.LoginID);

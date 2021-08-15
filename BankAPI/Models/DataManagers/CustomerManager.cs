@@ -40,9 +40,14 @@ namespace BankAPI.Models.DataManagers
             return true;
         }
 
-        public bool UpdateCustomerAccess(int customerID, bool access)
+        public bool UpdateCustomerAccess(int customerID, bool isLocked)
         {
-            _context.Login.FirstOrDefault(x => x.CustomerID == customerID).Access = access;
+            //_context.Login.FirstOrDefault(x => x.CustomerID == customerID).Access = access;
+            //_context.SaveChanges();
+
+            var customer = _context.Customer.Find(customerID);
+                customer.ID.IsLocked = isLocked;
+
             _context.SaveChanges();
 
             return true;

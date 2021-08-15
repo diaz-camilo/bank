@@ -34,7 +34,7 @@ namespace AdminPortal
             // Configure api client.
             services.AddHttpClient("api", client =>
             {
-                
+
                 client.BaseAddress = new Uri("https://localhost:6131");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
@@ -46,20 +46,10 @@ namespace AdminPortal
                 options.UseLazyLoadingProxies();
             });
 
-            services.AddIdentity<AppUser, AppRole>(options =>
-            {
-                options.User.AllowedUserNameCharacters = "1234567890admin";
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 4;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
+            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<WebBankContext>();
 
-            }
-            ).AddEntityFrameworkStores<WebBankContext>();
 
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
