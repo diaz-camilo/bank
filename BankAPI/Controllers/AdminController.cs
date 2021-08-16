@@ -161,9 +161,9 @@ namespace BankAPI.Controllers
         true if the operation was successful.
          */
         [HttpPut("BlockBillPayByID/{billID}/{state}")]
-        public bool PutBillPayState(int billID, bool isBlocked)
+        public bool PutBillPayState(int billID, bool state)
         {
-            return _repo.UpdateBillPayState(billID, isBlocked);
+            return _repo.UpdateBillPayState(billID, state);
         }
     }
 }

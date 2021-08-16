@@ -33,7 +33,7 @@ namespace BankAPI
 
             services.AddDbContext<WebBankContext>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext)));
-                options.UseLazyLoadingProxies();
+                //options.UseLazyLoadingProxies();
             });
             
             
