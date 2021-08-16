@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
+using utils.Enums;
 
 namespace BankAPI.Models
 {
-    public enum AccountType
-    {
-        Savings = 0,
-        Checking = 1
-    }
+    
 
     public class Account
     {

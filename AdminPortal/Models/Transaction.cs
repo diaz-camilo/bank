@@ -2,19 +2,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using utils;
+using utils.Enums;
+
 
 namespace AdminPortal.Models
 {
-    public enum TransactionType
-    {
-        Deposit = 1,
-        Withdraw = 2,
-        IncomingTransfer = 3,
-        OutgoingTransfer = 4,
-        ServiceCharge = 5,
-        BillPay = 6
-    }
-
     public record Transaction
     {
         public int TransactionID { get; set; }

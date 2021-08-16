@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using utils.Enums;
 using WebBanking.Data;
 using WebBanking.Models;
 
@@ -27,11 +28,18 @@ namespace WebBanking.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            ;
+            
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await ProcessBillPays(stoppingToken);
+                try
+                {
+                    await ProcessBillPays(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+
+                }
 
                 _logger.LogInformation($"Next payments will run at {DateTime.UtcNow.AddMinutes(1).ToLocalTime().ToShortTimeString()}");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
@@ -44,12 +52,12 @@ namespace WebBanking.BackgroundServices
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<WebBankContext>();
 
-            // here you do the work that needs to be done
-
+            
+            // get all active bills
             var timeNow = DateTime.UtcNow.ToLocalTime();
             var BillPays = context.BillPay.
                 Where(bill => bill.ScheduleTimeUtc < timeNow).
-                Where(bill => bill.State != State.failed).
+                Where(bill => bill.State == State.active).
                 ToList();
             
             _logger.LogInformation($"Bills to process {BillPays.Count}");
@@ -61,11 +69,13 @@ namespace WebBanking.BackgroundServices
                 if (availableBalance < bill.Amount)
                 {
                     bill.State = State.failed;
+
+                    // Adds a transaction with $0 amount to the statements to keep a record of when the transaction failed for future references.
                     bill.Account.Transactions.Add(
                     new Transaction
                     {
                         Amount = 0,
-                        Comment = $"Your scheduled payment for {bill.Payee.Name} failed (Insuficient Funds)",
+                        Comment = $"Bill - {bill.Payee.Name} failed",
                         TransactionTimeUtc = DateTime.UtcNow,
                         TransactionType = TransactionType.BillPay
                     });
@@ -77,7 +87,7 @@ namespace WebBanking.BackgroundServices
                         new Transaction
                         {
                             Amount = bill.Amount,
-                            Comment = $"Your scheduled payment for {bill.Payee.Name} has been processed",
+                            Comment = $"Bill - {bill.Payee.Name} paid",
                             TransactionTimeUtc = DateTime.UtcNow,
                             TransactionType = TransactionType.BillPay
                         });
@@ -102,10 +112,7 @@ namespace WebBanking.BackgroundServices
                 }
 
             }
-
-
-
-            // here you do the work that needs to be done
+            
 
             await context.SaveChangesAsync(stoppingToken);
 

@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using AdminPortal.Data;
+using AdminPortal.Models;
+using AdminPortal.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,10 +34,22 @@ namespace AdminPortal
             // Configure api client.
             services.AddHttpClient("api", client =>
             {
-                
+
                 client.BaseAddress = new Uri("https://localhost:6131");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
+
+            services.AddDbContext<WebBankContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("WebBankContext"));
+                // Enable lazy loading.
+                options.UseLazyLoadingProxies();
+            });
+
+            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<WebBankContext>();
+
+
+            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,9 +66,12 @@ namespace AdminPortal
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

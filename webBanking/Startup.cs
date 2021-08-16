@@ -5,12 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebBanking.BackgroundServices;
 using WebBanking.Data;
+using WebBanking.Models;
+using WebBanking.Repository;
 
 namespace WebBanking
 {
@@ -28,6 +31,11 @@ namespace WebBanking
         {
             services.AddControllersWithViews();
 
+            services.ConfigureApplicationCookie(config =>
+            {
+                config.LoginPath = "/Login";
+            });
+
             // Add database connection string
             services.AddDbContext<WebBankContext>(options =>
             {
@@ -35,6 +43,19 @@ namespace WebBanking
                 // Enable lazy loading.
                 options.UseLazyLoadingProxies();
             });
+
+            // Add Identity and configure
+            services.AddIdentity<AppUser, AppRole>(options =>
+            {
+                options.User.AllowedUserNameCharacters = "1234567890admin";
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 4;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+
+            }
+            ).AddEntityFrameworkStores<WebBankContext>();
 
             // Enable Background Services
             services.AddHostedService<BillPayBackgroundService>();
@@ -74,18 +95,26 @@ namespace WebBanking
              * dotnet sql-cache create "<connection string>" <schema name> <table name>
              * dotnet sql-cache create "Server=rmit.australiaeast.cloudapp.azure.com;Uid=s3820251_a2;Pwd=abc123;" dotnet SessionCache
              */
+
             services.AddDistributedSqlServerCache(options =>
             {
                 options.ConnectionString = Configuration.GetConnectionString(nameof(WebBankContext));
                 options.SchemaName = "dotnet";
                 options.TableName = "SessionCache";
             });
+
             services.AddSession(options =>
             {
                 // Make the session cookie essential.
                 options.Cookie.IsEssential = true;
                 options.IdleTimeout = TimeSpan.FromDays(7);
             });
+
+            // Custome Identity repository
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            // Custome Claims factory
+            services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppUserClaimsPrincipalFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -104,11 +133,12 @@ namespace WebBanking
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
-
-            // enables authentication
+                        
             app.UseSession();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

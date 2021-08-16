@@ -26,11 +26,12 @@ namespace WebBanking
         {
             var host = CreateHostBuilder(args).Build();
 
+            // seed DB
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
-                {
+                {                    
                     SeedData.Initialize(services);
                 }
                 catch (Exception ex)

@@ -4,32 +4,23 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 using utils;
+using utils.Enums;
 
 namespace WebBanking.Models
 {
-    public enum Period
-    {
-        Monthly = 0,
-        Quarterly = 1,
-        Annually = 3,
-        Once = 4
-    }
-
-    public enum State
-    {
-        active, failed, blocked
-    }
+    
 
     public class BillPay
     {
 
-
+        [Required]
         public int BillPayID { get; set; }
 
         [Required]
         [RegularExpression(@"\d{4}", ErrorMessage = "Account number must be a 4 digit number")]
         [DisplayName("Account to Debit")]
 
+      
         [ForeignKey("Account")]
         public int AccountNumber { get; set; }
         public virtual Account Account { get; set; }
@@ -56,6 +47,7 @@ namespace WebBanking.Models
         [DisplayName("Frequency")]
         public Period Period { get; set; }
 
+        [Required]
         public State State { get; set; }
     }
 }

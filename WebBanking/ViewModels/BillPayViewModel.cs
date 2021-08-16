@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using utils;
+using utils.Enums;
 using WebBanking.Models;
 
 namespace WebBanking.ViewModels

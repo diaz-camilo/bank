@@ -10,9 +10,12 @@ namespace AdminPortal.ViewModels
         [Display(Name = "BillPay State")]
         public bool BillPayState { get; set; }
 
-        public List<SelectListItem> BillPayStates { get; } = new List<SelectListItem>()
-            { new SelectListItem("Block Bill", "true"),
-            new SelectListItem("Unblock Bill", "false") };
+        public List<SelectListItem> BillPayStates { get; } =
+            new List<SelectListItem>
+        {
+            new SelectListItem("Block Bill", "true"),
+            new SelectListItem("Unblock Bill", "false")
+        };
 
         [Range(1, 99999), Display(Name = "BillPay ID")]
         public int BillPayID { get; set; }

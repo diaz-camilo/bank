@@ -9,41 +9,58 @@ using Microsoft.EntityFrameworkCore;
 using WebBanking.Data;
 using WebBanking.Models;
 using WebBanking.ViewModels;
-using Newtonsoft;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using WebBanking.Repository;
+using utils.Enums;
 
 namespace WebBanking.Controllers
 {
+    [Authorize(Roles = nameof(RoleEnum.Customer))]
     public class AccountController : Controller
     {
         private readonly WebBankContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public AccountController(WebBankContext context) => _context = context;
+        public AccountController(WebBankContext context, IUserRepository userRepository)
+        {
+            _context = context;
+            this._userRepository = userRepository;
+        }
+
+        [AllowAnonymous]
+        public IActionResult Login() => RedirectToAction("Login", "Signup");
+
+        // Get Customer ID from Claims
+        private int GetCustomerID() => Int32.Parse(HttpContext.User.FindFirst("CustomerID").Value);
+
+        // Get Customer Object from DB
+        private async Task<Customer> getActiveCustomerAsync() => await _context.Customer.FindAsync(GetCustomerID());
 
         //GET: Customer/Deposit/5
-        public async Task<IActionResult> Deposit(int? id)
+        public async Task<IActionResult> DepositAsync(int? id)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer
-                .FirstOrDefaultAsync(m => m.CustomerID == customerID);
-            if (customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
+            
+
+            var customer = await getActiveCustomerAsync();
+
+            var account = customer.Accounts.Find(x => x.AccountNumber == id);
+
+            if (account == null)
                 return NotFound();
-
-
-            var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
-
 
             return View(new TransactionViewModel { AccountNumber = (int)id });
         }
+
+
+
 
         [HttpPost]
         //POST: Customer/Deposit/5
         public async Task<IActionResult> Deposit(TransactionViewModel transaction)
         {
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer.FindAsync(customerID);
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
             if (account == null)
@@ -75,10 +92,11 @@ namespace WebBanking.Controllers
             decimal Amount;
             int? AccountNum = HttpContext.Session.GetInt32("depositAccountNum");
             bool isAmountSet = Decimal.TryParse(HttpContext.Session.GetString("depositAmount"), out Amount);
+
             HttpContext.Session.Remove("depositAccountNum");
             HttpContext.Session.Remove("depositAmount");
-            var customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = await _context.Customer.FindAsync(customerID);
+
+            var customer = await getActiveCustomerAsync();
 
             if (!isAmountSet || AccountNum == null || Amount <= 0 || customer == null)
                 return NotFound();
@@ -87,7 +105,7 @@ namespace WebBanking.Controllers
             if (account == null)
                 return NotFound();
 
-            // Note this code could be moved out of the controller, e.g., into the Model.
+            // Update account
             account.Balance += Amount;
             account.Transactions.Add(
                 new Transaction
@@ -103,9 +121,9 @@ namespace WebBanking.Controllers
         }
 
         //GET: Customer/Withdraw/5
-        public IActionResult Withdraw(int? id)
+        public async Task<IActionResult> WithdrawAsync(int? id)
         {
-            var customer = getCustomerFromSession();
+            var customer = await getActiveCustomerAsync();
 
             if (customer == null ||
                 customer.Accounts.FirstOrDefault(x => x.AccountNumber == id) == null)
@@ -118,9 +136,7 @@ namespace WebBanking.Controllers
         //POST: Customer/Withdraw/5
         public async Task<IActionResult> Withdraw(TransactionViewModel transaction)
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == transaction.AccountNumber);
             if (account == null)
@@ -148,9 +164,7 @@ namespace WebBanking.Controllers
         //POST: Customer/Withdraw/5
         public async Task<IActionResult> WithdrawConfirm()
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var jsonTransaction = HttpContext.Session.GetString
                 ("jsonWithdrawViewModelObject");
@@ -170,9 +184,7 @@ namespace WebBanking.Controllers
         //POST: Customer/Withdraw/5
         public async Task<IActionResult> WithdrawConfirm(int i)
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var jsonTransaction = HttpContext.Session.GetString
                 ("jsonWithdrawViewModelObject");
@@ -199,6 +211,7 @@ namespace WebBanking.Controllers
             if (!ModelState.IsValid)
                 return View(transaction);
 
+            // Update account
             account.Balance -= transaction.Amount;
             account.FreeTransactions--;
             account.Transactions.Add(
@@ -227,18 +240,14 @@ namespace WebBanking.Controllers
 
         public async Task<IActionResult> Transfer()
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             return View(customer);
         }
 
         public async Task<IActionResult> TransferForm(int? id)
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var account = customer.Accounts.FirstOrDefault(x => x.AccountNumber == id);
             if (account == null)
@@ -250,9 +259,7 @@ namespace WebBanking.Controllers
         [HttpPost]
         public async Task<IActionResult> TransferForm(TransactionViewModel transaction)
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var originAccount = await _context.Account.FindAsync(transaction.AccountNumber);
             decimal fee = originAccount.FreeTransactions <= 0 ? 0.20m : 0; // 0.20 for transfers
@@ -291,9 +298,7 @@ namespace WebBanking.Controllers
 
         public async Task<IActionResult> TransferFormConfirm()
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             var jsonTransaction = HttpContext.Session.GetString
                 ("jsonTransactionViewModelObject");
@@ -315,9 +320,7 @@ namespace WebBanking.Controllers
 
         public async Task<IActionResult> TransferFormConfirm(int i)
         {
-            var customer = getCustomerFromSession();
-            if (customer == null)
-                return NotFound();
+            var customer = await getActiveCustomerAsync();
 
             TransactionViewModel transaction =
                 JsonConvert.DeserializeObject<TransactionViewModel>
@@ -353,8 +356,7 @@ namespace WebBanking.Controllers
                 return View(transaction);
 
 
-            // Note this code could be moved out of the controller, e.g., into the Model.
-
+            // Add transactions and update accounts
             originAccount.Balance -= transaction.Amount;
             destinationAccount.Balance += transaction.Amount;
             originAccount.FreeTransactions--;
@@ -400,15 +402,5 @@ namespace WebBanking.Controllers
 
             return RedirectToAction(nameof(Index), nameof(Customer));
         }
-
-        private Customer getCustomerFromSession()
-        {
-            int? customerID = HttpContext.Session.GetInt32(nameof(Customer.CustomerID));
-            var customer = customerID == null ? null : _context.Customer
-                .FirstOrDefault(m => m.CustomerID == customerID);
-
-            return customer;
-        }
-
     }
 }

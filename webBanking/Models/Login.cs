@@ -1,22 +1,23 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿//using System;
+//using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebBanking.Models
-{
-    public class Login
-    {
-        [RegularExpression(@"^\d{8}$")]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string LoginID { get; set; }
+//namespace WebBanking.Models
+//{
+//    public class Login
+//    {
+//        [RegularExpression(@"^\d{8}$")]
+//        [DatabaseGenerated(DatabaseGeneratedOption.None)]
 
-        [Required]
-        public int CustomerID { get; set; }
-        public virtual Customer Customer { get; set; }
+//        public string LoginID { get; set; }
 
-        [Required, StringLength(64)]
-        public string PasswordHash { get; set; }
+//        [Required]
+//        public int CustomerID { get; set; }
+//        public virtual Customer Customer { get; set; }
 
-        public bool Access { get; set; }
-    }
-}
+//        [Required, StringLength(64)]
+//        public string PasswordHash { get; set; }
+
+//        public bool Access { get; set; }
+//    }
+//}

@@ -31,10 +31,16 @@ namespace BankAPI
 
             services.AddControllers();
 
-            services.AddDbContext<WebBankContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext))));
+            services.AddDbContext<WebBankContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString(nameof(WebBankContext)));
+                //options.UseLazyLoadingProxies();
+            });
+            
+            
 
             services.AddScoped<CustomerManager>();
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

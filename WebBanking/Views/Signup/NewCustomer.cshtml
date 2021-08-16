@@ -1,0 +1,50 @@
+﻿@model WebBanking.Models.SignupUser
+
+@{ ViewData["Title"] = "Signup"; }
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>New Customer</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="NewCustomer">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="password" class="control-label"></label>
+                <input asp-for="password" class="form-control" />
+                <span asp-validation-for="password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="control-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <hr />
+            <h4>Select Account And Enter Initial Deposit</h4>
+            <div class="form-group">
+                <label asp-for="AccountType" class="control-label"></label>
+                <select asp-for="AccountType" asp-items="new SelectList(Enum.GetValues<AccountType>())" class="form-control"></select>
+                @*@{new SelectList(Enum.GetValues<AccountType>())}*@
+
+            </div>
+            <div class="form-group">
+                <label asp-for="InicialDeposit" class="control-label"></label>
+                <input asp-for="InicialDeposit" class="form-control" />
+                <span asp-validation-for="InicialDeposit" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Signup" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@*@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}*@

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using BankAPI.Data;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+using utils.Enums;
 
 namespace BankAPI.Models.DataManagers
 {
@@ -40,9 +42,15 @@ namespace BankAPI.Models.DataManagers
             return true;
         }
 
-        public bool UpdateCustomerAccess(int customerID, bool access)
+        public bool UpdateCustomerAccess(int customerID, bool isLocked)
         {
-            _context.Login.FirstOrDefault(x => x.CustomerID == customerID).Access = access;
+           
+            var customer = _context.Customer.
+                Include(nameof(Customer.ID)).
+                FirstOrDefault(x => x.CustomerID == customerID);
+
+                customer.ID.IsLocked = isLocked;
+
             _context.SaveChanges();
 
             return true;

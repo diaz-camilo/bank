@@ -1,24 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using utils.Enums;
 using WebBanking.Models;
+using WebBanking.Repository;
 
 namespace WebBanking.Data
 {
     public static class SeedData
     {
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static void CreateCustomers(WebBankContext context)
         {
-            using var context = new WebBankContext(serviceProvider.GetRequiredService<DbContextOptions<WebBankContext>>());
-
-            var any = context.Customer.Any();
-
-            // Look for customers.
-            if (any)
-                return; // DB has already been seeded.
-
-            // Stages changes
             context.Customer.AddRange(
                 new Customer
                 {
@@ -44,27 +38,10 @@ namespace WebBanking.Data
                     Name = "Shekhar Kalra"
                 });
             context.SaveChanges();
+        }
 
-            context.Login.AddRange(
-                new Login
-                {
-                    LoginID = "12345678",
-                    CustomerID = 2100,
-                    PasswordHash = "YBNbEL4Lk8yMEWxiKkGBeoILHTU7WZ9n8jJSy8TNx0DAzNEFVsIVNRktiQV+I8d2"
-                },
-                new Login
-                {
-                    LoginID = "38074569",
-                    CustomerID = 2200,
-                    PasswordHash = "EehwB3qMkWImf/fQPlhcka6pBMZBLlPWyiDW6NLkAh4ZFu2KNDQKONxElNsg7V04"
-                },
-                new Login
-                {
-                    LoginID = "17963428",
-                    CustomerID = 2300,
-                    PasswordHash = "LuiVJWbY4A3y1SilhMU5P00K54cGEvClx5Y+xWHq7VpyIUe5fe7m+WeI0iwid7GE"
-                });
-            context.SaveChanges();
+        public static void CreateAccounts(WebBankContext context)
+        {
             context.Account.AddRange(
                 new Account
                 {
@@ -99,8 +76,49 @@ namespace WebBanking.Data
                     FreeTransactions = 4
                 });
             context.SaveChanges();
+        }
+
+        public static void CreatePayees(WebBankContext context)
+        {
+            context.Payee.AddRange(
+                new Payee
+                {
+                    PayeeID = 123,
+                    Name = "Telstra",
+                    Address = "123 Swanston st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 9876 5432"
+                },
+                new Payee
+                {
+                    PayeeID = 456,
+                    Name = "Origin",
+                    Address = "123 Lonsdale st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 6547 5432"
+                },
+                new Payee
+                {
+                    PayeeID = 789,
+                    Name = "Netflix Au",
+                    Address = "123 Flinders st",
+                    Postcode = "3000",
+                    Suburb = "Melbourne",
+                    State = "VIC",
+                    Phone = "(03) 7878 1122"
+                });
+            context.SaveChanges();
+        }
+
+        public static void AddInitialTransactions(WebBankContext context)
+        {
             const string openingBalance = "Opening balance";
             const string format = "dd/MM/yyyy hh:mm:ss tt";
+
             context.Transaction.AddRange(
                 new Transaction
                 {
@@ -135,40 +153,212 @@ namespace WebBanking.Data
                     TransactionTimeUtc = DateTime.ParseExact("19/12/2019 10:00:00 PM", format, null)
                 });
             context.SaveChanges();
-            context.Payee.AddRange(
-                new Payee
+        }
+
+        public static void CreateUserLogin(IUserRepository userRepository)
+        {
+            userRepository.CreateUserAsync(new SignupUser
+            {
+                Name = "Matthew Bolger",
+                LoginID = "12345678",
+                CustomerID = 2100,
+                password = "abc123"
+            }).Wait();
+
+
+            userRepository.CreateUserAsync(new SignupUser
+            {
+                Name = "Rodney Cocker",
+                LoginID = "38074569",
+                CustomerID = 2200,
+                password = "ilovermit2020"
+            }).Wait();
+
+
+            userRepository.CreateUserAsync(new SignupUser
+            {
+                Name = "Shekhar Kalra",
+                LoginID = "17963428",
+                CustomerID = 2300,
+                password = "youWill_n0tGuess-This!"
+            }).Wait();
+
+
+            // Admin
+            userRepository.CreateAdminAsync(new SignupUser
+            {
+                Name = "admin",
+                LoginID = "admin",
+                password = "admin"
+            }).Wait();
+        }
+
+        public static void AddTransactions(WebBankContext context)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+
+                var accNum =
+                    j == 0 ? 4100 :
+                    j == 1 ? 4101 :
+                    j == 2 ? 4200 :
+                    4300;
+
+                var randomNum = new Random();
+                int randInt = randomNum.Next();
+                var startDate = DateTime.UtcNow.AddDays(-30);
+                var account = context.Account.Find(accNum);
+
+                int i = 0;
+
+                while (DateTime.UtcNow.AddDays(30) > startDate)
                 {
-                    PayeeID = 123,
-                    Name = "Telstra",
-                    Address = "123 Swanston st",
-                    Postcode = "3000",
-                    Suburb = "Melbourne",
-                    State = "VIC",
-                    Phone = "(03) 9876 5432"
-                },
-                new Payee
-                {
-                    PayeeID = 456,
-                    Name = "Origin",
-                    Address = "123 Lonsdale st",
-                    Postcode = "3000",
-                    Suburb = "Melbourne",
-                    State = "VIC",
-                    Phone = "(03) 6547 5432"
-                },
-                new Payee
-                {
-                    PayeeID = 789,
-                    Name = "Netflix Au",
-                    Address = "123 Flinders st",
-                    Postcode = "3000",
-                    Suburb = "Melbourne",
-                    State = "VIC",
-                    Phone = "(03) 7878 1122"
+                    startDate = startDate.AddHours(randomNum.Next(10, 24));
+                    var amount = randomNum.Next(50, 500);
+                    var typeDecider = randomNum.Next();
+                    var type =
+                        typeDecider % 5 == 0 ? TransactionType.Withdraw :
+                        typeDecider % 11 == 0 ? TransactionType.OutgoingTransfer :
+                        typeDecider % 17 == 0 ? TransactionType.BillPay :
+                        TransactionType.Deposit;
+
+                    if (type == TransactionType.Withdraw)
+                    {
+                        account.Transactions.Add(
+                            new Transaction
+                            {
+                                TransactionTimeUtc = startDate,
+                                Amount = amount,
+                                TransactionType = type,
+                            });
+                        if (account.FreeTransactions < 1)
+                        {
+                            account.Transactions.Add(
+                                new Transaction
+                                {
+                                    TransactionTimeUtc = startDate.AddMilliseconds(10),
+                                    Amount = 0.10m,
+                                    TransactionType = TransactionType.ServiceCharge,
+                                    Comment = $"Withdraw Service Charge"
+                                });
+                        }
+                        account.Balance -= 0.1m;
+                        account.FreeTransactions--;
+                    }
+                    if (type == TransactionType.OutgoingTransfer)
+                    {
+                        if (account.FreeTransactions < 1)
+                        {
+                            account.Transactions.Add(
+                                new Transaction
+                                {
+                                    TransactionTimeUtc = startDate.AddMilliseconds(10),
+                                    Amount = 0.20m,
+                                    TransactionType = TransactionType.ServiceCharge,
+                                    Comment = $"Transfer Service Charge"
+                                });
+                            account.Balance -= 0.2m;
+                        }
+                        account.FreeTransactions--;
+
+                        int accountDecider;
+                        int destiAccount;
+                        do
+                        {
+                            accountDecider = randomNum.Next(0, 999) % 4;
+                            destiAccount =
+                            accountDecider == 0 ? 4100 :
+                            accountDecider == 1 ? 4101 :
+                            accountDecider == 2 ? 4200 :
+                            4300;
+
+                            if (account.AccountNumber != destiAccount)
+                            {
+
+
+                                var destinationAccount = context.Account.Find(destiAccount);
+                                destinationAccount.Transactions.Add(
+
+                                    new Transaction
+                                    {
+                                        TransactionTimeUtc = startDate,
+                                        Amount = amount,
+                                        TransactionType = TransactionType.IncomingTransfer,
+
+                                    });
+                                destinationAccount.Balance += amount;
+
+                                account.Transactions.Add(
+                                    new Transaction
+                                    {
+                                        TransactionTimeUtc = startDate,
+                                        Amount = amount,
+                                        TransactionType = type,
+                                        DestinationAccountNumber = destinationAccount.AccountNumber
+                                    });
+                            }
+
+
+                        } while (account.AccountNumber == destiAccount);
+
+                    }
+                    if (type == TransactionType.BillPay)
+                    {
+                        account.Transactions.Add(
+                                new Transaction
+                                {
+                                    TransactionTimeUtc = startDate,
+                                    Amount = amount,
+                                    TransactionType = type,
+                                });
+                        account.Balance -= amount;
+                    }
+                    if (type == TransactionType.Deposit)
+                    {
+                        account.Transactions.Add(
+                            new Transaction
+                            {
+                                TransactionTimeUtc = startDate,
+                                Amount = amount,
+                                TransactionType = type,
+                            });
+                    }
+                    account.Balance += type == TransactionType.Deposit ? amount : (-amount);
+                    i++;
+                    //_context.SaveChanges();
                 }
-                );
-            // Commits changes
+            }
+
             context.SaveChanges();
         }
+        
+        public static void Initialize(IServiceProvider serviceProvider)
+        {
+            var context = serviceProvider.GetRequiredService<WebBankContext>();
+
+            var any = context.Customer.Any();
+
+            // Look for customers.
+            if (any)
+                return; // DB has already been seeded.
+
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
+            userRepository.CreateRolesAsync().Wait();
+            CreateCustomers(context);
+            CreateAccounts(context);
+            AddInitialTransactions(context);
+            CreatePayees(context);
+            AddTransactions(context);
+
+            CreateUserLogin(userRepository);
+
+
+
+
+            context.SaveChanges();
+
+        }
+
     }
 }

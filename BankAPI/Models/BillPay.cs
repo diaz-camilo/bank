@@ -4,22 +4,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 using utils;
+using utils.Enums;
 
 namespace BankAPI.Models
 {
-    public enum Period
-    {
-        Monthly = 0,
-        Quarterly = 1,
-        Annually = 3,
-        Once = 4
-    }
-
-    public enum State
-    {
-        active, failed, blocked
-    }
-
     public class BillPay
     {
 

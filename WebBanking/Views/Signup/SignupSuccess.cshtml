@@ -1,0 +1,39 @@
+﻿@model SignupUser
+
+@{
+    ViewData["Title"] = "Signup Summary";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<h4>Welcome to MCBA!</h4>
+<p>Please take note of your Login ID as you will need it to use our online portal</p>
+<div>        
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LoginID)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LoginID)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AccountNum)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AccountNum)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AccountType)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AccountType)
+        </dd>        
+    </dl>
+</div>
+
